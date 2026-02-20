@@ -1,10 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/dashboard/admin/data/model/admin_dashboard_model.dart';
-import 'package:frontend/features/dashboard/admin/data/repository/admin_dashboard_repository.dart';
 
-////////////////////////////////////////////////////////////
-/// Repository Provider
-////////////////////////////////////////////////////////////
+import '../../data/repository/admin_dashboard_repository.dart';
 
 final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((
   ref,
@@ -13,16 +10,16 @@ final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((
 });
 
 ////////////////////////////////////////////////////////////
-/// Dashboard Provider (FIXED WITH autoDispose)
+/// Dashboard Provider (FULL ANALYTICS MODEL)
 ////////////////////////////////////////////////////////////
 
 final adminDashboardProvider =
     AsyncNotifierProvider.autoDispose<
       AdminDashboardNotifier,
-      AdminDashboardModel
+      AdminDashboardData
     >(AdminDashboardNotifier.new);
 
-class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardModel> {
+class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
   late final AdminDashboardRepository _repository;
 
   ////////////////////////////////////////////////////////////
@@ -30,18 +27,39 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardModel> {
   ////////////////////////////////////////////////////////////
 
   @override
-  Future<AdminDashboardModel> build() async {
+  Future<AdminDashboardData> build() async {
     print("DEBUG: AdminDashboardProvider → build()");
 
     _repository = ref.read(adminDashboardRepositoryProvider);
 
     try {
-      final stats = await _repository.getDashboardStats();
+      final dashboard = await _repository.getDashboardStats();
 
-      print("DEBUG: Jobs count: ${stats.totalJobs}");
-      print("DEBUG: Applications count: ${stats.totalApplications}");
+      ////////////////////////////////////////////////////////
+      /// Debug logs (useful for verification)
+      ////////////////////////////////////////////////////////
 
-      return stats;
+      print("DEBUG: Range: ${dashboard.range}");
+
+      print("DEBUG: Total Jobs: ${dashboard.summary.totalJobs}");
+      print("DEBUG: Open Jobs: ${dashboard.summary.openJobs}");
+
+      print("DEBUG: Total Partners: ${dashboard.summary.totalPartners}");
+      print("DEBUG: Pending Partners: ${dashboard.summary.pendingPartners}");
+
+      print(
+        "DEBUG: Total Applications: ${dashboard.summary.totalApplications}",
+      );
+
+      print("DEBUG: Pipeline stages: ${dashboard.pipeline.stages.length}");
+
+      print(
+        "DEBUG: Top partners count: ${dashboard.leaderboards.topPartners.length}",
+      );
+
+      print("DEBUG: Trend points: ${dashboard.trends.applications.length}");
+
+      return dashboard;
     } catch (e, stack) {
       print("DEBUG: AdminDashboardProvider ERROR: $e");
       print("DEBUG: STACK: $stack");
@@ -51,7 +69,7 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardModel> {
   }
 
   ////////////////////////////////////////////////////////////
-  /// REFRESH (FIXED — NO invalidate, NO flicker)
+  /// REFRESH (NO flicker, preserves old state on error)
   ////////////////////////////////////////////////////////////
 
   Future<void> refresh() async {
@@ -63,7 +81,7 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardModel> {
       return await _repository.getDashboardStats();
     });
 
-    // restore old data if refresh fails
+    /// restore old data if refresh fails
     if (state.hasError && previousState.hasValue) {
       state = previousState;
     }

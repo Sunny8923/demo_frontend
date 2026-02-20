@@ -8,19 +8,9 @@ class AdminDashboardRepository {
   //////////////////////////////////////////////////////////////
   /// GET ADMIN DASHBOARD STATS
   //////////////////////////////////////////////////////////////
+  Future<AdminDashboardData> getDashboardStats() async {
+    final response = await _dio.get("/admin/dashboard");
 
-  Future<AdminDashboardModel> getDashboardStats() async {
-    try {
-      print("DEBUG: Calling GET /dashboard/admin");
-
-      final response = await _dio.get("/dashboard/admin");
-
-      print("DEBUG: Dashboard response: ${response.data}");
-
-      return AdminDashboardModel.fromJson(response.data);
-    } catch (e) {
-      print("DEBUG: Dashboard error: $e");
-      rethrow;
-    }
+    return AdminDashboardData.fromJson(response.data);
   }
 }

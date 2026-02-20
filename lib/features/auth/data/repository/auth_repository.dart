@@ -8,78 +8,162 @@ import '../models/auth_response_model.dart';
 class AuthRepository {
   final Dio _dio = ApiClient.instance;
 
+  ////////////////////////////////////////////////////////////
+  // LOGIN WITH FULL DEBUG LOGS
+  ////////////////////////////////////////////////////////////
+
   Future<AuthResponseModel> login(String email, String password) async {
-    final response = await _dio.post(
-      ApiEndpoints.login,
-      data: {"email": email, "password": password},
-    );
+    try {
+      final requestBody = {"email": email.trim(), "password": password.trim()};
 
-    final auth = AuthResponseModel.fromJson(response.data);
+      print("========================================");
+      print("LOGIN API CALLED");
+      print("URL: ${_dio.options.baseUrl}${ApiEndpoints.login}");
+      print("HEADERS: ${_dio.options.headers}");
+      print("REQUEST BODY: $requestBody");
+      print("========================================");
 
-    await TokenStorage.saveToken(auth.token);
+      final response = await _dio.post(ApiEndpoints.login, data: requestBody);
 
-    return auth;
+      print("========================================");
+      print("LOGIN SUCCESS RESPONSE");
+      print("STATUS CODE: ${response.statusCode}");
+      print("RESPONSE DATA: ${response.data}");
+      print("========================================");
+
+      final auth = AuthResponseModel.fromJson(response.data);
+
+      print("TOKEN RECEIVED: ${auth.token}");
+
+      await TokenStorage.saveToken(auth.token);
+
+      print("TOKEN SAVED SUCCESSFULLY");
+
+      return auth;
+    } on DioException catch (e) {
+      print("========================================");
+      print("LOGIN FAILED");
+      print("ERROR MESSAGE: ${e.message}");
+      print("STATUS CODE: ${e.response?.statusCode}");
+      print("RESPONSE DATA: ${e.response?.data}");
+      print("REQUEST DATA: ${e.requestOptions.data}");
+      print("REQUEST HEADERS: ${e.requestOptions.headers}");
+      print("REQUEST URL: ${e.requestOptions.uri}");
+      print("========================================");
+
+      rethrow;
+    } catch (e) {
+      print("========================================");
+      print("UNKNOWN LOGIN ERROR: $e");
+      print("========================================");
+      rethrow;
+    }
   }
+
+  ////////////////////////////////////////////////////////////
+  // SIGNUP WITH DEBUG
+  ////////////////////////////////////////////////////////////
 
   Future<void> signup(String name, String email, String password) async {
-    final response = await _dio.post(
-      ApiEndpoints.signup,
-      data: {"name": name, "email": email, "password": password},
-    );
+    try {
+      final body = {
+        "name": name.trim(),
+        "email": email.trim(),
+        "password": password.trim(),
+      };
 
-    print("Signup success: ${response.data}");
+      print("========================================");
+      print("SIGNUP API CALLED");
+      print("URL: ${_dio.options.baseUrl}${ApiEndpoints.signup}");
+      print("BODY: $body");
+      print("========================================");
+
+      final response = await _dio.post(ApiEndpoints.signup, data: body);
+
+      print("SIGNUP SUCCESS: ${response.data}");
+    } on DioException catch (e) {
+      print("SIGNUP FAILED");
+      print("STATUS: ${e.response?.statusCode}");
+      print("DATA: ${e.response?.data}");
+      rethrow;
+    }
   }
+
+  ////////////////////////////////////////////////////////////
+  // GET CURRENT USER WITH DEBUG
+  ////////////////////////////////////////////////////////////
 
   Future<UserModel> getCurrentUser() async {
-    final response = await _dio.get(ApiEndpoints.me);
+    try {
+      print("========================================");
+      print("GET CURRENT USER API CALLED");
+      print("URL: ${_dio.options.baseUrl}${ApiEndpoints.me}");
+      print("HEADERS: ${_dio.options.headers}");
+      print("========================================");
 
-    final userJson = response.data['user'];
+      final response = await _dio.get(ApiEndpoints.me);
 
-    return UserModel.fromJson(userJson);
+      print("GET USER RESPONSE: ${response.data}");
+
+      final userJson = response.data['data'];
+
+      return UserModel.fromJson(userJson);
+    } on DioException catch (e) {
+      print("GET USER FAILED");
+      print("STATUS: ${e.response?.statusCode}");
+      print("DATA: ${e.response?.data}");
+      rethrow;
+    }
   }
+
+  ////////////////////////////////////////////////////////////
+  // PARTNER SIGNUP DEBUG
+  ////////////////////////////////////////////////////////////
 
   Future<void> partnerSignup({
     required String name,
     required String email,
     required String password,
-
     required String organisationName,
     required String ownerName,
     required String establishmentDate,
-
     required String gstNumber,
     required String panNumber,
-
     required String address,
-
     required String contactNumber,
-
     required String officialEmail,
-
     required bool msmeRegistered,
   }) async {
-    await _dio.post(
-      ApiEndpoints.partnerSignup,
-      data: {
+    try {
+      final body = {
         "name": name,
         "email": email,
         "password": password,
-
         "organisationName": organisationName,
         "ownerName": ownerName,
         "establishmentDate": establishmentDate,
-
         "gstNumber": gstNumber,
         "panNumber": panNumber,
-
         "address": address,
-
         "contactNumber": contactNumber,
-
         "officialEmail": officialEmail,
-
         "msmeRegistered": msmeRegistered,
-      },
-    );
+      };
+
+      print("========================================");
+      print("PARTNER SIGNUP API CALLED");
+      print("URL: ${_dio.options.baseUrl}${ApiEndpoints.partnerSignup}");
+      print("BODY: $body");
+      print("========================================");
+
+      final response = await _dio.post(ApiEndpoints.partnerSignup, data: body);
+
+      print("PARTNER SIGNUP SUCCESS: ${response.data}");
+    } on DioException catch (e) {
+      print("PARTNER SIGNUP FAILED");
+      print("STATUS: ${e.response?.statusCode}");
+      print("DATA: ${e.response?.data}");
+      rethrow;
+    }
   }
 }
