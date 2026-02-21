@@ -7,16 +7,45 @@ class DashboardPipelineWidget extends StatelessWidget {
 
   const DashboardPipelineWidget({super.key, required this.pipeline});
 
+  ////////////////////////////////////////////////////////////
+  /// Premium stage configuration with colors
+  ////////////////////////////////////////////////////////////
+
   static const List<_PipelineStageMeta> _stages = [
-    _PipelineStageMeta("APPLIED", "Applied", Icons.inbox_outlined),
-    _PipelineStageMeta("SCREENING", "Screening", Icons.search_outlined),
     _PipelineStageMeta(
-      "INTERVIEW_SCHEDULED",
-      "Interview",
-      Icons.event_outlined,
+      key: "APPLIED",
+      label: "Applied",
+      icon: Icons.inbox_outlined,
+      color: Color(0xff6366F1),
     ),
-    _PipelineStageMeta("OFFER_SENT", "Offer", Icons.description_outlined),
-    _PipelineStageMeta("HIRED", "Hired", Icons.verified_outlined),
+
+    _PipelineStageMeta(
+      key: "SCREENING",
+      label: "Screening",
+      icon: Icons.search_outlined,
+      color: Color(0xff8B5CF6),
+    ),
+
+    _PipelineStageMeta(
+      key: "INTERVIEW_SCHEDULED",
+      label: "Interview",
+      icon: Icons.event_outlined,
+      color: Color(0xffF59E0B),
+    ),
+
+    _PipelineStageMeta(
+      key: "OFFER_SENT",
+      label: "Offer",
+      icon: Icons.description_outlined,
+      color: Color(0xffEC4899),
+    ),
+
+    _PipelineStageMeta(
+      key: "HIRED",
+      label: "Hired",
+      icon: Icons.verified_rounded,
+      color: Color(0xff10B981),
+    ),
   ];
 
   @override
@@ -32,36 +61,36 @@ class DashboardPipelineWidget extends StatelessWidget {
         Text(
           "Hiring Pipeline",
           style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
 
-        const Gap(12),
+        const Gap(14),
 
         ////////////////////////////////////////////////////////////
-        /// Pipeline Container
+        /// Premium container
         ////////////////////////////////////////////////////////////
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
 
           decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(22),
+
+            gradient: LinearGradient(
+              colors: [const Color(0xff0F172A), const Color(0xff111827)],
+            ),
 
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(.35),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
               ),
             ],
-
-            border: Border.all(color: Colors.grey.withOpacity(.08)),
           ),
 
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-
             child: Row(
               children: List.generate(_stages.length, (index) {
                 final stage = _stages[index];
@@ -72,21 +101,12 @@ class DashboardPipelineWidget extends StatelessWidget {
 
                 return Row(
                   children: [
-                    _StageItem(
-                      icon: stage.icon,
-                      label: stage.label,
-                      count: count,
-                      isHighlight: stage.key == "HIRED",
-                    ),
+                    _PremiumStageItem(stage: stage, count: count),
 
                     if (!isLast)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6),
-                        child: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
+                      _Connector(
+                        fromColor: stage.color,
+                        toColor: _stages[index + 1].color,
                       ),
                   ],
                 );
@@ -100,85 +120,134 @@ class DashboardPipelineWidget extends StatelessWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// Individual Stage Item
+/// Premium Stage Item
 ////////////////////////////////////////////////////////////
 
-class _StageItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
+class _PremiumStageItem extends StatelessWidget {
+  final _PipelineStageMeta stage;
   final int count;
-  final bool isHighlight;
 
-  const _StageItem({
-    required this.icon,
-    required this.label,
-    required this.count,
-    required this.isHighlight,
-  });
+  const _PremiumStageItem({required this.stage, required this.count});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    final color = isHighlight ? Colors.green : theme.colorScheme.primary;
-
-    return Container(
-      width: 90,
-
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+    return SizedBox(
+      width: 110,
 
       child: Column(
         children: [
-          ////////////////////////////////////////////////////////
-          /// Icon container
-          ////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
+          /// Gradient icon circle
+          ////////////////////////////////////////////////////////////
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(14),
 
             decoration: BoxDecoration(
-              color: color.withOpacity(.1),
               shape: BoxShape.circle,
+
+              gradient: LinearGradient(
+                colors: [stage.color, stage.color.withOpacity(.7)],
+              ),
+
+              boxShadow: [
+                BoxShadow(
+                  color: stage.color.withOpacity(.5),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
 
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(stage.icon, color: Colors.white, size: 20),
           ),
 
-          const Gap(8),
+          const Gap(12),
 
-          ////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           /// Count
-          ////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           Text(
-            count.toString(),
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+            _format(count),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
             ),
           ),
 
-          const Gap(2),
+          const Gap(4),
 
-          ////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           /// Label
-          ////////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           Text(
-            label,
+            stage.label,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(.7),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  String _format(int number) {
+    if (number >= 1000000) {
+      return "${(number / 1000000).toStringAsFixed(1)}M";
+    }
+
+    if (number >= 1000) {
+      return "${(number / 1000).toStringAsFixed(1)}K";
+    }
+
+    return number.toString();
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// Premium connector line
+////////////////////////////////////////////////////////////
+
+class _Connector extends StatelessWidget {
+  final Color fromColor;
+  final Color toColor;
+
+  const _Connector({required this.fromColor, required this.toColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+
+      width: 36,
+      height: 4,
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+
+        gradient: LinearGradient(colors: [fromColor, toColor]),
       ),
     );
   }
 }
 
 ////////////////////////////////////////////////////////////
-/// Stage Metadata
+/// Stage metadata
 ////////////////////////////////////////////////////////////
 
 class _PipelineStageMeta {
   final String key;
   final String label;
   final IconData icon;
+  final Color color;
 
-  const _PipelineStageMeta(this.key, this.label, this.icon);
+  const _PipelineStageMeta({
+    required this.key,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
 }

@@ -1,168 +1,189 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:frontend/features/dashboard/admin/data/model/admin_dashboard_model.dart';
 import 'package:gap/gap.dart';
 
 class DashboardSummaryCards extends StatelessWidget {
   final DashboardSummary summary;
+  final DashboardSummaryChange summaryChange;
 
-  const DashboardSummaryCards({super.key, required this.summary});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _SummaryCard(
-                title: "Total Jobs",
-                value: summary.totalJobs.toString(),
-                icon: Icons.work_outline,
-                color: const Color(0xFF4F46E5),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: _SummaryCard(
-                title: "Applications",
-                value: summary.totalApplications.toString(),
-                icon: Icons.assignment_outlined,
-                color: const Color(0xFF059669),
-              ),
-            ),
-          ],
-        ),
-
-        const Gap(12),
-
-        Row(
-          children: [
-            Expanded(
-              child: _SummaryCard(
-                title: "Partners",
-                value: summary.totalPartners.toString(),
-                icon: Icons.groups_outlined,
-                color: const Color(0xFFEA580C),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: _SummaryCard(
-                title: "Hired",
-                value: summary.hired.toString(),
-                icon: Icons.verified_outlined,
-                color: const Color(0xFFDC2626),
-              ),
-            ),
-          ],
-        ),
-
-        const Gap(12),
-
-        Row(
-          children: [
-            Expanded(
-              child: _SummaryCard(
-                title: "Open Jobs",
-                value: summary.openJobs.toString(),
-                icon: Icons.folder_open_outlined,
-                color: const Color(0xFF0891B2),
-              ),
-            ),
-            const Gap(12),
-            Expanded(
-              child: _SummaryCard(
-                title: "Pending Partners",
-                value: summary.pendingPartners.toString(),
-                icon: Icons.pending_actions_outlined,
-                color: const Color(0xFF7C3AED),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-////////////////////////////////////////////////////////////
-/// Individual Summary Card
-////////////////////////////////////////////////////////////
-
-class _SummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _SummaryCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
+  const DashboardSummaryCards({
+    super.key,
+    required this.summary,
+    required this.summaryChange,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    return GridView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 1.2,
+      ),
+      children: [
+        _card(
+          title: "Applications",
+          value: summary.totalApplications.toString(),
+          change: summaryChange.totalApplications,
+          icon: Icons.description_rounded,
+          colors: const [Color(0xff6366F1), Color(0xff8B5CF6)],
+        ),
+
+        _card(
+          title: "Hires",
+          value: summary.hired.toString(),
+          change: summaryChange.hired,
+          icon: Icons.person_add_alt_1_rounded,
+          colors: const [Color(0xff10B981), Color(0xff059669)],
+        ),
+
+        _card(
+          title: "Jobs",
+          value: summary.totalJobs.toString(),
+          change: summaryChange.totalJobs,
+          icon: Icons.work_outline_rounded,
+          colors: const [Color(0xffF59E0B), Color(0xffD97706)],
+        ),
+
+        _card(
+          title: "Partners",
+          value: summary.totalPartners.toString(),
+          change: summaryChange.totalPartners,
+          icon: Icons.handshake_outlined,
+          colors: const [Color(0xff3B82F6), Color(0xff2563EB)],
+        ),
+
+        _card(
+          title: "Recruiters",
+          value: summary.totalRecruiters.toString(),
+          change: summaryChange.totalRecruiters,
+          icon: Icons.groups_rounded,
+          colors: const [Color(0xffEC4899), Color(0xffBE185D)],
+        ),
+
+        _card(
+          title: "Active Applications",
+          value: summary.activeApplications.toString(),
+          change: 0,
+          icon: Icons.local_fire_department_outlined,
+          colors: const [Color(0xffEF4444), Color(0xffB91C1C)],
+          hideChange: true,
+        ),
+      ],
+    );
+  }
+
+  ////////////////////////////////////////////////////////////
+  /// Individual Card
+  ////////////////////////////////////////////////////////////
+
+  Widget _card({
+    required String title,
+    required String value,
+    required double change,
+    required IconData icon,
+    required List<Color> colors,
+    bool hideChange = false,
+  }) {
+    final isPositive = change >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
 
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+
+        gradient: LinearGradient(
+          colors: colors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: colors.first.withOpacity(.35),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
-
-        border: Border.all(color: Colors.grey.withOpacity(.08)),
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //////////////////////////////////////////////////////
-          /// Top Row (Icon)
-          //////////////////////////////////////////////////////
-          Container(
-            padding: const EdgeInsets.all(10),
+          ////////////////////////////////////////////////////////////
+          /// Top Row
+          ////////////////////////////////////////////////////////////
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: Colors.white, size: 26),
 
-            decoration: BoxDecoration(
-              color: color.withOpacity(.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-
-            child: Icon(icon, size: 20, color: color),
+              if (!hideChange) _changeBadge(change, isPositive),
+            ],
           ),
 
-          const Gap(14),
+          const Spacer(),
 
-          //////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           /// Value
-          //////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           Text(
             value,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
 
           const Gap(4),
 
-          //////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           /// Title
-          //////////////////////////////////////////////////////
+          ////////////////////////////////////////////////////////////
           Text(
             title,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+            style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(.9)),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().scale(begin: const Offset(.95, .95));
+  }
+
+  ////////////////////////////////////////////////////////////
+  /// Change Badge
+  ////////////////////////////////////////////////////////////
+
+  Widget _changeBadge(double change, bool isPositive) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+
+      child: Row(
+        children: [
+          Icon(
+            isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+            size: 14,
+            color: Colors.white,
+          ),
+
+          const Gap(2),
+
+          Text(
+            "${change.toStringAsFixed(1)}%",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:frontend/features/dashboard/recruiter/presentation/screens/recruiter_dashboard_screen.dart';
 import 'package:gap/gap.dart';
 
 import 'package:frontend/features/dashboard/admin/presentation/screens/admin_dashboard_screeen.dart';
@@ -59,6 +60,11 @@ class DashboardRouter extends ConsumerWidget {
                   duration: 300.ms,
                 );
               },
+            );
+
+          case "RECRUITER":
+            return const RecruiterDashboardScreen().animate().fadeIn(
+              duration: 300.ms,
             );
 
           case "USER":

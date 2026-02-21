@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:frontend/features/dashboard/admin/presentation/widgets/dashboard_distribution_chart.dart';
 import 'package:frontend/features/dashboard/admin/presentation/widgets/dashboard_pipeline.dart';
 import 'package:gap/gap.dart';
 
@@ -69,6 +70,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   ////////////////////////////////////////////////////////////
                   DashboardSummaryCards(
                     summary: dashboard.summary,
+                    summaryChange: dashboard.summaryChange,
                   ).animate().fadeIn(delay: 100.ms).slideY(begin: .1),
 
                   const Gap(24),
@@ -88,6 +90,15 @@ class AdminDashboardScreen extends ConsumerWidget {
                   DashboardTrendsChart(
                     trends: dashboard.trends,
                   ).animate().fadeIn(delay: 300.ms).slideY(begin: .1),
+
+                  const Gap(24),
+
+                  ////////////////////////////////////////////////////////////
+                  /// Distribution Chart
+                  ////////////////////////////////////////////////////////////
+                  AdminDistributionChart(
+                    distribution: dashboard.distribution,
+                  ).animate().fadeIn(delay: 350.ms).slideY(begin: .1),
 
                   const Gap(24),
 

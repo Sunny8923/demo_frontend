@@ -8,8 +8,11 @@ class AdminDashboardRepository {
   //////////////////////////////////////////////////////////////
   /// GET ADMIN DASHBOARD STATS
   //////////////////////////////////////////////////////////////
-  Future<AdminDashboardData> getDashboardStats() async {
-    final response = await _dio.get("/admin/dashboard");
+  Future<AdminDashboardData> getDashboardStats({String range = "7d"}) async {
+    final response = await _dio.get(
+      "/admin/dashboard",
+      queryParameters: {"range": range},
+    );
 
     return AdminDashboardData.fromJson(response.data);
   }

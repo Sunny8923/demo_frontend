@@ -16,6 +16,8 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     final user = ref.watch(currentUserProvider).value;
 
     final name = user?.name ?? "Unknown User";
@@ -26,10 +28,12 @@ class AppDrawer extends ConsumerWidget {
     return Drawer(
       width: 300,
 
+      backgroundColor: scheme.surface,
+
       child: Column(
         children: [
           ////////////////////////////////////////////////////////////
-          /// MODERN GRADIENT HEADER
+          /// PREMIUM HEADER
           ////////////////////////////////////////////////////////////
           _DrawerHeader(
             name: name,
@@ -39,74 +43,89 @@ class AppDrawer extends ConsumerWidget {
           ),
 
           ////////////////////////////////////////////////////////////
-          /// MENU
+          /// MENU CONTAINER
           ////////////////////////////////////////////////////////////
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
 
-              children: [
-                _ModernDrawerItem(
-                  icon: Icons.dashboard_rounded,
-                  title: "Dashboard",
-                  onTap: () => Navigator.pop(context),
-                ),
+              child: Column(
+                children: [
+                  const Gap(8),
 
-                _ModernDrawerItem(
-                  icon: Icons.person_outline_rounded,
-                  title: "Profile",
-                  onTap: () => Navigator.pop(context),
-                ),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        _ModernDrawerItem(
+                          icon: Icons.dashboard_rounded,
+                          title: "Dashboard",
+                          onTap: () => Navigator.pop(context),
+                        ),
 
-                _ModernDrawerItem(
-                  icon: Icons.settings_rounded,
-                  title: "Settings",
-                  onTap: () {
-                    Navigator.pop(context);
+                        _ModernDrawerItem(
+                          icon: Icons.person_outline_rounded,
+                          title: "Profile",
+                          onTap: () => Navigator.pop(context),
+                        ),
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                    );
-                  },
-                ),
+                        _ModernDrawerItem(
+                          icon: Icons.settings_rounded,
+                          title: "Settings",
+                          onTap: () {
+                            Navigator.pop(context);
 
-                const Gap(20),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const SettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
 
-                Divider(color: Colors.grey.withOpacity(.2), thickness: 1),
+                        const Gap(16),
 
-                const Gap(10),
+                        Divider(color: scheme.outlineVariant.withOpacity(.3)),
 
-                _ModernDrawerItem(
-                  icon: Icons.logout_rounded,
-                  title: "Logout",
-                  isDestructive: true,
+                        const Gap(10),
 
-                  onTap: () async {
-                    await ref.read(authStateProvider.notifier).logout();
+                        _ModernDrawerItem(
+                          icon: Icons.logout_rounded,
+                          title: "Logout",
+                          isDestructive: true,
+                          onTap: () async {
+                            await ref.read(authStateProvider.notifier).logout();
 
-                    if (!context.mounted) return;
+                            if (!context.mounted) return;
 
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (_) => false,
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const LoginScreen(),
+                              ),
+                              (_) => false,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
 
-          ////////////////////////////////////////////////////////////
-          /// FOOTER
-          ////////////////////////////////////////////////////////////
-          Padding(
-            padding: const EdgeInsets.all(12),
+                  ////////////////////////////////////////////////////////////
+                  /// FOOTER
+                  ////////////////////////////////////////////////////////////
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
 
-            child: Text(
-              "Version 1.0.0",
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    child: Text(
+                      "Version 1.0.0",
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -116,7 +135,11 @@ class AppDrawer extends ConsumerWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// HEADER
+/// PREMIUM HEADER
+////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////
+/// ULTRA PREMIUM DRAWER HEADER
 ////////////////////////////////////////////////////////////
 
 class _DrawerHeader extends StatelessWidget {
@@ -134,127 +157,202 @@ class _DrawerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final scheme = Theme.of(context).colorScheme;
 
     return Container(
       width: double.infinity,
 
-      padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-
+      ////////////////////////////////////////////////////////////
+      /// OUTER GRADIENT BACKGROUND
+      ////////////////////////////////////////////////////////////
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withOpacity(.75),
+            scheme.primary,
+            Color.lerp(scheme.primary, Colors.black, .25)!,
+            Color.lerp(scheme.primary, Colors.black, .45)!,
           ],
-
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
+      child: Stack(
         children: [
           ////////////////////////////////////////////////////////////
-          /// AVATAR WITH GLASS EFFECT
+          /// DECORATIVE ORB
           ////////////////////////////////////////////////////////////
-          ClipRRect(
-            borderRadius: BorderRadius.circular(40),
+          Positioned(
+            top: -40,
+            right: -40,
+            child: Container(
+              width: 140,
+              height: 140,
 
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-
-              child: Container(
-                width: 56,
-                height: 56,
-
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.15),
-                  shape: BoxShape.circle,
-
-                  border: Border.all(color: Colors.white.withOpacity(.3)),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [Colors.white.withOpacity(.12), Colors.transparent],
                 ),
+              ),
+            ),
+          ),
 
-                alignment: Alignment.center,
+          ////////////////////////////////////////////////////////////
+          /// CONTENT
+          ////////////////////////////////////////////////////////////
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
 
-                child: Text(
-                  firstLetter,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
 
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(.08),
+
+                    borderRadius: BorderRadius.circular(20),
+
+                    border: Border.all(color: Colors.white.withOpacity(.15)),
+                  ),
+
+                  child: Row(
+                    children: [
+                      ////////////////////////////////////////////////////
+                      /// PREMIUM AVATAR WITH GLOW RING
+                      ////////////////////////////////////////////////////
+                      Container(
+                        padding: const EdgeInsets.all(3),
+
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(.9),
+                              Colors.white.withOpacity(.2),
+                            ],
+                          ),
+
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(.25),
+                              blurRadius: 16,
+                            ),
+                          ],
+                        ),
+
+                        child: CircleAvatar(
+                          radius: 28,
+
+                          backgroundColor: Colors.black.withOpacity(.35),
+
+                          child: Text(
+                            firstLetter,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const Gap(14),
+
+                      ////////////////////////////////////////////////////
+                      /// USER INFO
+                      ////////////////////////////////////////////////////
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+
+                            const Gap(3),
+
+                            Text(
+                              email,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(.75),
+                              ),
+                            ),
+
+                            const Gap(8),
+
+                            ////////////////////////////////////////////////////
+                            /// ROLE BADGE
+                            ////////////////////////////////////////////////////
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(.25),
+                                    Colors.white.withOpacity(.1),
+                                  ],
+                                ),
+
+                                borderRadius: BorderRadius.circular(20),
+
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(.25),
+                                ),
+                              ),
+
+                              child: Text(
+                                role,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: .5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
-
-          const Gap(14),
-
-          ////////////////////////////////////////////////////////////
-          /// NAME
-          ////////////////////////////////////////////////////////////
-          Text(
-            name,
-
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-
-          const Gap(4),
-
-          ////////////////////////////////////////////////////////////
-          /// EMAIL
-          ////////////////////////////////////////////////////////////
-          Text(
-            email,
-
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withOpacity(.85),
-            ),
-          ),
-
-          const Gap(10),
-
-          ////////////////////////////////////////////////////////////
-          /// ROLE BADGE
-          ////////////////////////////////////////////////////////////
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-
-            child: Text(
-              role,
-
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: -.2);
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: -.15);
   }
 }
-
 ////////////////////////////////////////////////////////////
 /// MODERN ITEM
 ////////////////////////////////////////////////////////////
 
-class _ModernDrawerItem extends StatelessWidget {
+class _ModernDrawerItem extends StatefulWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
@@ -268,36 +366,67 @@ class _ModernDrawerItem extends StatelessWidget {
   });
 
   @override
+  State<_ModernDrawerItem> createState() => _ModernDrawerItemState();
+}
+
+class _ModernDrawerItemState extends State<_ModernDrawerItem> {
+  bool hovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-    final color = isDestructive
-        ? theme.colorScheme.error
-        : theme.colorScheme.onSurface;
+    final color = widget.isDestructive ? scheme.error : scheme.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
 
-      child: Material(
-        color: Colors.transparent,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => hovered = true),
+        onExit: (_) => setState(() => hovered = false),
 
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
+          onTap: widget.onTap,
 
-          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
 
-          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+
+              color: hovered
+                  ? scheme.primary.withOpacity(.08)
+                  : Colors.transparent,
+            ),
 
             child: Row(
               children: [
-                Icon(icon, size: 22, color: color),
+                ////////////////////////////////////////////////////
+                /// ICON CONTAINER
+                ////////////////////////////////////////////////////
+                Container(
+                  padding: const EdgeInsets.all(8),
+
+                  decoration: BoxDecoration(
+                    color: hovered
+                        ? scheme.primary.withOpacity(.12)
+                        : scheme.surfaceContainerHighest,
+
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+
+                  child: Icon(widget.icon, size: 20, color: color),
+                ),
 
                 const Gap(14),
 
                 Expanded(
                   child: Text(
-                    title,
+                    widget.title,
 
                     style: TextStyle(
                       fontSize: 15,

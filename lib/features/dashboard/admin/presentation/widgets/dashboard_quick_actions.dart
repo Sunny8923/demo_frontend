@@ -14,100 +14,148 @@ class DashboardQuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ////////////////////////////////////////////////////////////
-        /// Title
-        ////////////////////////////////////////////////////////////
-        Text(
-          "Quick Actions",
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+    return Container(
+      ////////////////////////////////////////////////////////////
+      /// PREMIUM OUTER CARD (NEW)
+      ////////////////////////////////////////////////////////////
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: scheme.surface,
+
+        borderRadius: BorderRadius.circular(24),
+
+        border: Border.all(color: scheme.outlineVariant.withOpacity(.35)),
+
+        boxShadow: [
+          BoxShadow(
+            color: scheme.shadow.withOpacity(.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-        ),
+        ],
+      ),
 
-        const Gap(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ////////////////////////////////////////////////////////////
+          /// HEADER
+          ////////////////////////////////////////////////////////////
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
 
-        ////////////////////////////////////////////////////////////
-        /// Actions Grid (mobile optimized)
-        ////////////////////////////////////////////////////////////
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.25,
+                decoration: BoxDecoration(
+                  color: scheme.primary.withOpacity(.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
 
-          children: [
-            _ActionCard(
-              icon: Icons.add_box_outlined,
-              label: "Create Job",
-              color: const Color(0xFF4F46E5),
-              onTap: () => _showCreateJobSheet(context),
-            ),
+                child: Icon(
+                  Icons.flash_on_rounded,
+                  size: 20,
+                  color: scheme.primary,
+                ),
+              ),
 
-            _ActionCard(
-              icon: Icons.verified_user_outlined,
-              label: "Approve Partners",
-              color: const Color(0xFF059669),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PendingPartnerScreen(),
-                  ),
-                );
-              },
-            ),
+              const Gap(10),
 
-            _ActionCard(
-              icon: Icons.work_outline,
-              label: "View Jobs",
-              color: const Color(0xFFEA580C),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AdminJobsScreen()),
-                );
-              },
-            ),
+              Text(
+                "Quick Actions",
 
-            _ActionCard(
-              icon: Icons.assignment_outlined,
-              label: "Applications",
-              color: const Color(0xFF0891B2),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AdminApplicationsScreen(),
-                  ),
-                );
-              },
-            ),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
 
-            _ActionCard(
-              icon: Icons.account_tree_outlined,
-              label: "ATS Pipeline",
-              color: const Color(0xFF7C3AED),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AtsPipelineScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ],
+          const Gap(16),
+
+          ////////////////////////////////////////////////////////////
+          /// GRID
+          ////////////////////////////////////////////////////////////
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.25,
+
+            children: [
+              _ActionCard(
+                icon: Icons.add_box_outlined,
+                label: "Create Job",
+                color: const Color(0xFF4F46E5),
+                onTap: () => _showCreateJobSheet(context),
+              ),
+
+              _ActionCard(
+                icon: Icons.verified_user_outlined,
+                label: "Approve Partners",
+                color: const Color(0xFF059669),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PendingPartnerScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              _ActionCard(
+                icon: Icons.work_outline,
+                label: "View Jobs",
+                color: const Color(0xFFEA580C),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AdminJobsScreen()),
+                  );
+                },
+              ),
+
+              _ActionCard(
+                icon: Icons.assignment_outlined,
+                label: "Applications",
+                color: const Color(0xFF0891B2),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AdminApplicationsScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              _ActionCard(
+                icon: Icons.account_tree_outlined,
+                label: "ATS Pipeline",
+                color: const Color(0xFF7C3AED),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AtsPipelineScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   //////////////////////////////////////////////////////////////
-  /// Create Job Bottom Sheet
+  /// Create Job Bottom Sheet (UNCHANGED)
   //////////////////////////////////////////////////////////////
 
   void _showCreateJobSheet(BuildContext context) {
@@ -175,10 +223,10 @@ class DashboardQuickActions extends StatelessWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// Individual Action Card
+/// PREMIUM ACTION CARD (UPGRADED)
 ////////////////////////////////////////////////////////////
 
-class _ActionCard extends StatelessWidget {
+class _ActionCard extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -192,58 +240,76 @@ class _ActionCard extends StatelessWidget {
   });
 
   @override
+  State<_ActionCard> createState() => _ActionCardState();
+}
+
+class _ActionCardState extends State<_ActionCard> {
+  bool hovered = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+    return MouseRegion(
+      onEnter: (_) => setState(() => hovered = true),
+      onExit: (_) => setState(() => hovered = false),
 
-      child: Ink(
-        decoration: BoxDecoration(
-          color: theme.cardColor,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 150),
+        scale: hovered ? 1.03 : 1,
+
+        child: InkWell(
+          onTap: widget.onTap,
           borderRadius: BorderRadius.circular(16),
 
-          border: Border.all(color: Colors.grey.withOpacity(.08)),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: theme.cardColor,
 
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+              borderRadius: BorderRadius.circular(16),
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            //////////////////////////////////////////////////////
-            /// Icon Container
-            //////////////////////////////////////////////////////
-            Container(
-              padding: const EdgeInsets.all(12),
-
-              decoration: BoxDecoration(
-                color: color.withOpacity(.1),
-                borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: hovered
+                    ? widget.color.withOpacity(.35)
+                    : Colors.grey.withOpacity(.08),
               ),
 
-              child: Icon(icon, color: color, size: 24),
+              boxShadow: [
+                BoxShadow(
+                  color: hovered
+                      ? widget.color.withOpacity(.15)
+                      : Colors.black.withOpacity(.04),
+                  blurRadius: hovered ? 16 : 10,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
 
-            const Gap(10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
 
-            //////////////////////////////////////////////////////
-            /// Label
-            //////////////////////////////////////////////////////
-            Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                  decoration: BoxDecoration(
+                    color: widget.color.withOpacity(.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+
+                  child: Icon(widget.icon, color: widget.color, size: 24),
+                ),
+
+                const Gap(10),
+
+                Text(
+                  widget.label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

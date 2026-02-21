@@ -2,6 +2,7 @@ class AdminDashboardData {
   final String range;
 
   final DashboardSummary summary;
+  final DashboardSummaryChange summaryChange;
   final DashboardPipeline pipeline;
   final DashboardTrends trends;
   final DashboardDistribution distribution;
@@ -11,6 +12,7 @@ class AdminDashboardData {
   const AdminDashboardData({
     required this.range,
     required this.summary,
+    required this.summaryChange,
     required this.pipeline,
     required this.trends,
     required this.distribution,
@@ -25,6 +27,9 @@ class AdminDashboardData {
       range: data['range'] ?? "7d",
 
       summary: DashboardSummary.fromJson(data['summary'] ?? {}),
+      summaryChange: DashboardSummaryChange.fromJson(
+        data['summaryChange'] ?? {},
+      ), // ✅ NEW
 
       pipeline: DashboardPipeline.fromJson(data['pipeline'] ?? {}),
 
@@ -44,6 +49,9 @@ class DashboardSummary {
   final int activePartners;
   final int pendingPartners;
 
+  final int totalRecruiters; // ✅ NEW
+  final int activeRecruiters; // ✅ NEW
+
   final int totalJobs;
   final int openJobs;
   final int closedJobs;
@@ -58,6 +66,8 @@ class DashboardSummary {
     required this.totalPartners,
     required this.activePartners,
     required this.pendingPartners,
+    required this.totalRecruiters, // ✅ NEW
+    required this.activeRecruiters, // ✅ NEW
     required this.totalJobs,
     required this.openJobs,
     required this.closedJobs,
@@ -72,6 +82,10 @@ class DashboardSummary {
       totalPartners: json['totalPartners'] ?? 0,
       activePartners: json['activePartners'] ?? 0,
       pendingPartners: json['pendingPartners'] ?? 0,
+
+      totalRecruiters: json['totalRecruiters'] ?? 0, // ✅ NEW
+      activeRecruiters: json['activeRecruiters'] ?? 0, // ✅ NEW
+
       totalJobs: json['totalJobs'] ?? 0,
       openJobs: json['openJobs'] ?? 0,
       closedJobs: json['closedJobs'] ?? 0,
@@ -96,6 +110,32 @@ class DashboardPipeline {
     });
 
     return DashboardPipeline(stages: parsed);
+  }
+}
+
+class DashboardSummaryChange {
+  final double totalJobs;
+  final double totalApplications;
+  final double totalPartners;
+  final double totalRecruiters;
+  final double hired;
+
+  const DashboardSummaryChange({
+    required this.totalJobs,
+    required this.totalApplications,
+    required this.totalPartners,
+    required this.totalRecruiters,
+    required this.hired,
+  });
+
+  factory DashboardSummaryChange.fromJson(Map<String, dynamic> json) {
+    return DashboardSummaryChange(
+      totalJobs: (json['totalJobs'] ?? 0).toDouble(),
+      totalApplications: (json['totalApplications'] ?? 0).toDouble(),
+      totalPartners: (json['totalPartners'] ?? 0).toDouble(),
+      totalRecruiters: (json['totalRecruiters'] ?? 0).toDouble(),
+      hired: (json['hired'] ?? 0).toDouble(),
+    );
   }
 }
 
@@ -204,10 +244,12 @@ class JobDistribution {
 
 class DashboardLeaderboards {
   final List<TopPartner> topPartners;
+  final List<TopRecruiter> topRecruiters;
   final List<TopJob> topJobs;
 
   const DashboardLeaderboards({
     required this.topPartners,
+    required this.topRecruiters,
     required this.topJobs,
   });
 
@@ -215,6 +257,10 @@ class DashboardLeaderboards {
     return DashboardLeaderboards(
       topPartners: (json['topPartners'] as List? ?? [])
           .map((e) => TopPartner.fromJson(e))
+          .toList(),
+
+      topRecruiters: (json['topRecruiters'] as List? ?? [])
+          .map((e) => TopRecruiter.fromJson(e))
           .toList(),
 
       topJobs: (json['topJobs'] as List? ?? [])
@@ -239,6 +285,26 @@ class TopPartner {
     return TopPartner(
       partnerId: json['partnerId'] ?? "",
       partnerName: json['partnerName'] ?? "",
+      applications: json['applications'] ?? 0,
+    );
+  }
+}
+
+class TopRecruiter {
+  final String userId;
+  final String userName;
+  final int applications;
+
+  const TopRecruiter({
+    required this.userId,
+    required this.userName,
+    required this.applications,
+  });
+
+  factory TopRecruiter.fromJson(Map<String, dynamic> json) {
+    return TopRecruiter(
+      userId: json['userId'] ?? "",
+      userName: json['userName'] ?? "",
       applications: json['applications'] ?? 0,
     );
   }

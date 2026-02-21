@@ -23,7 +23,13 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
   late final AdminDashboardRepository _repository;
 
   ////////////////////////////////////////////////////////////
-  /// BUILD (AUTO CALLED)
+  /// STORE CURRENT RANGE
+  ////////////////////////////////////////////////////////////
+
+  String _currentRange = "7d";
+
+  ////////////////////////////////////////////////////////////
+  /// BUILD (initial load)
   ////////////////////////////////////////////////////////////
 
   @override
@@ -32,58 +38,65 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
 
     _repository = ref.read(adminDashboardRepositoryProvider);
 
-    try {
-      final dashboard = await _repository.getDashboardStats();
+    return _fetchDashboard();
+  }
 
-      ////////////////////////////////////////////////////////
-      /// Debug logs (useful for verification)
-      ////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  /// INTERNAL FETCH METHOD
+  ////////////////////////////////////////////////////////////
 
-      print("DEBUG: Range: ${dashboard.range}");
+  Future<AdminDashboardData> _fetchDashboard() async {
+    print("DEBUG: Fetch dashboard range = $_currentRange");
 
-      print("DEBUG: Total Jobs: ${dashboard.summary.totalJobs}");
-      print("DEBUG: Open Jobs: ${dashboard.summary.openJobs}");
+    final dashboard = await _repository.getDashboardStats(range: _currentRange);
 
-      print("DEBUG: Total Partners: ${dashboard.summary.totalPartners}");
-      print("DEBUG: Pending Partners: ${dashboard.summary.pendingPartners}");
+    return dashboard;
+  }
 
-      print(
-        "DEBUG: Total Applications: ${dashboard.summary.totalApplications}",
-      );
+  ////////////////////////////////////////////////////////////
+  /// SWITCH RANGE (KEY FEATURE)
+  ////////////////////////////////////////////////////////////
 
-      print("DEBUG: Pipeline stages: ${dashboard.pipeline.stages.length}");
+  Future<void> changeRange(String range) async {
+    if (_currentRange == range) return;
 
-      print(
-        "DEBUG: Top partners count: ${dashboard.leaderboards.topPartners.length}",
-      );
+    print("DEBUG: Changing range → $range");
 
-      print("DEBUG: Trend points: ${dashboard.trends.applications.length}");
+    _currentRange = range;
 
-      return dashboard;
-    } catch (e, stack) {
-      print("DEBUG: AdminDashboardProvider ERROR: $e");
-      print("DEBUG: STACK: $stack");
+    final previous = state;
 
-      rethrow;
+    state = await AsyncValue.guard(() async {
+      return await _fetchDashboard();
+    });
+
+    /// restore previous data if error
+    if (state.hasError && previous.hasValue) {
+      state = previous;
     }
   }
 
   ////////////////////////////////////////////////////////////
-  /// REFRESH (NO flicker, preserves old state on error)
+  /// REFRESH CURRENT RANGE
   ////////////////////////////////////////////////////////////
 
   Future<void> refresh() async {
-    print("DEBUG: AdminDashboardProvider → refresh()");
+    print("DEBUG: Refresh dashboard → $_currentRange");
 
-    final previousState = state;
+    final previous = state;
 
     state = await AsyncValue.guard(() async {
-      return await _repository.getDashboardStats();
+      return await _fetchDashboard();
     });
 
-    /// restore old data if refresh fails
-    if (state.hasError && previousState.hasValue) {
-      state = previousState;
+    if (state.hasError && previous.hasValue) {
+      state = previous;
     }
   }
+
+  ////////////////////////////////////////////////////////////
+  /// GET CURRENT RANGE (for UI)
+  ////////////////////////////////////////////////////////////
+
+  String get currentRange => _currentRange;
 }

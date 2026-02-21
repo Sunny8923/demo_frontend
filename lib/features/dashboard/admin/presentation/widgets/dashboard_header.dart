@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/dashboard/admin/presentation/providers/admin_dashboard_provider.dart';
 import 'package:gap/gap.dart';
 
-class DashboardHeader extends StatelessWidget {
+class DashboardHeader extends ConsumerWidget {
   final String adminName;
   final String range;
 
@@ -12,92 +14,123 @@ class DashboardHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
-    return Container(
-      width: double.infinity,
+    ////////////////////////////////////////////////////////////
+    /// PREMIUM GRADIENT (MATCHES KPI CARDS STYLE)
+    ////////////////////////////////////////////////////////////
 
-      padding: const EdgeInsets.all(20),
+    const gradient = LinearGradient(
+      colors: [Color(0xff6366F1), Color(0xff8B5CF6), Color(0xffEC4899)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
+        gradient: gradient,
 
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primary.withOpacity(.75),
-          ],
-
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-
+        ////////////////////////////////////////////////////////////
+        /// PREMIUM SOFT SHADOW (NO WHITE EDGE)
+        ////////////////////////////////////////////////////////////
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: const Color(0xff6366F1).withOpacity(.35),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           ////////////////////////////////////////////////////////////
-          /// Top row
+          /// TOP ROW
           ////////////////////////////////////////////////////////////
           Row(
             children: [
+              _Avatar(adminName),
+
+              const Gap(12),
+
               Expanded(
-                child: Text(
-                  "Admin Dashboard",
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white.withOpacity(.9),
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Admin Dashboard",
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    Text(
+                      "Analytics overview & insights",
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withOpacity(.85),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              _RangeChip(range: range),
+              _RangeChip(range),
             ],
           ),
 
-          const Gap(12),
+          const Gap(18),
 
           ////////////////////////////////////////////////////////////
-          /// Welcome text
+          /// WELCOME TEXT
           ////////////////////////////////////////////////////////////
           Text(
             "Welcome back,",
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withOpacity(.85),
+              color: Colors.white.withOpacity(.9),
             ),
           ),
 
-          const Gap(4),
+          const Gap(2),
 
           Text(
             adminName,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
+              fontWeight: FontWeight.w800,
             ),
           ),
 
-          const Gap(6),
+          const Gap(10),
 
           ////////////////////////////////////////////////////////////
-          /// Subtitle
+          /// STATUS ROW
           ////////////////////////////////////////////////////////////
-          Text(
-            "Here’s what's happening today",
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.white.withOpacity(.8),
-            ),
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Colors.greenAccent,
+                  shape: BoxShape.circle,
+                ),
+              ),
+
+              const Gap(8),
+
+              Text(
+                "System active • Realtime analytics enabled",
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withOpacity(.9),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -106,56 +139,75 @@ class DashboardHeader extends StatelessWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// Range Chip
+/// PREMIUM AVATAR (NO WHITE EDGE)
 ////////////////////////////////////////////////////////////
 
-class _RangeChip extends StatelessWidget {
-  final String range;
+class _Avatar extends StatelessWidget {
+  final String name;
 
-  const _RangeChip({required this.range});
-
-  String get label {
-    switch (range) {
-      case "7d":
-        return "Last 7 days";
-      case "30d":
-        return "Last 30 days";
-      case "90d":
-        return "Last 90 days";
-      default:
-        return range;
-    }
-  }
+  const _Avatar(this.name);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    return CircleAvatar(
+      radius: 20,
+      backgroundColor: Colors.white.withOpacity(.15),
 
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : "A",
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// PREMIUM RANGE CHIP (MATCHES HEADER)
+////////////////////////////////////////////////////////////
+
+class _RangeChip extends ConsumerWidget {
+  final String range;
+
+  const _RangeChip(this.range);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(.15),
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(20),
       ),
-
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.calendar_today_outlined,
-            size: 14,
-            color: Colors.white,
-          ),
-
-          const Gap(6),
-
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          _option(ref, "7d", range == "7d"),
+          _option(ref, "30d", range == "30d"),
         ],
+      ),
+    );
+  }
+
+  Widget _option(WidgetRef ref, String value, bool selected) {
+    return GestureDetector(
+      onTap: () {
+        ref.read(adminDashboardProvider.notifier).changeRange(value);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white.withOpacity(.25) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          value.toUpperCase(),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
