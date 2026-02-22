@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:frontend/core/ui/chart_colors.dart';
 import 'package:frontend/features/dashboard/admin/data/model/admin_dashboard_model.dart';
 import 'package:gap/gap.dart';
 
@@ -18,59 +19,67 @@ class DashboardSummaryCards extends StatelessWidget {
     return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: 1.2,
+        childAspectRatio: 1.1,
       ),
+
       children: [
         _card(
-          title: "Applications",
-          value: summary.totalApplications.toString(),
-          change: summaryChange.totalApplications,
-          icon: Icons.description_rounded,
-          colors: const [Color(0xff6366F1), Color(0xff8B5CF6)],
+          context,
+          "Applications",
+          summary.totalApplications.toString(),
+          summaryChange.totalApplications,
+          Icons.description_outlined,
+          ChartColors.primary,
         ),
 
         _card(
-          title: "Hires",
-          value: summary.hired.toString(),
-          change: summaryChange.hired,
-          icon: Icons.person_add_alt_1_rounded,
-          colors: const [Color(0xff10B981), Color(0xff059669)],
+          context,
+          "Hires",
+          summary.hired.toString(),
+          summaryChange.hired,
+          Icons.person_add_alt_outlined,
+          ChartColors.success,
         ),
 
         _card(
-          title: "Jobs",
-          value: summary.totalJobs.toString(),
-          change: summaryChange.totalJobs,
-          icon: Icons.work_outline_rounded,
-          colors: const [Color(0xffF59E0B), Color(0xffD97706)],
+          context,
+          "Jobs",
+          summary.totalJobs.toString(),
+          summaryChange.totalJobs,
+          Icons.work_outline,
+          ChartColors.warning,
         ),
 
         _card(
-          title: "Partners",
-          value: summary.totalPartners.toString(),
-          change: summaryChange.totalPartners,
-          icon: Icons.handshake_outlined,
-          colors: const [Color(0xff3B82F6), Color(0xff2563EB)],
+          context,
+          "Partners",
+          summary.totalPartners.toString(),
+          summaryChange.totalPartners,
+          Icons.handshake_outlined,
+          ChartColors.violet,
         ),
 
         _card(
-          title: "Recruiters",
-          value: summary.totalRecruiters.toString(),
-          change: summaryChange.totalRecruiters,
-          icon: Icons.groups_rounded,
-          colors: const [Color(0xffEC4899), Color(0xffBE185D)],
+          context,
+          "Recruiters",
+          summary.totalRecruiters.toString(),
+          summaryChange.totalRecruiters,
+          Icons.groups_outlined,
+          ChartColors.cyan,
         ),
 
         _card(
-          title: "Active Applications",
-          value: summary.activeApplications.toString(),
-          change: 0,
-          icon: Icons.local_fire_department_outlined,
-          colors: const [Color(0xffEF4444), Color(0xffB91C1C)],
+          context,
+          "Active Applications",
+          summary.activeApplications.toString(),
+          0,
+          Icons.local_fire_department_outlined,
+          ChartColors.error,
           hideChange: true,
         ),
       ],
@@ -78,36 +87,43 @@ class DashboardSummaryCards extends StatelessWidget {
   }
 
   ////////////////////////////////////////////////////////////
-  /// Individual Card
+  /// PREMIUM COLORED CARD
   ////////////////////////////////////////////////////////////
 
-  Widget _card({
-    required String title,
-    required String value,
-    required double change,
-    required IconData icon,
-    required List<Color> colors,
+  Widget _card(
+    BuildContext context,
+    String title,
+    String value,
+    double change,
+    IconData icon,
+    Color color, {
     bool hideChange = false,
   }) {
+    final theme = Theme.of(context);
     final isPositive = change >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
 
+        ////////////////////////////////////////////////////////////
+        /// SUBTLE PREMIUM GRADIENT
+        ////////////////////////////////////////////////////////////
         gradient: LinearGradient(
-          colors: colors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: [color.withOpacity(.18), color.withOpacity(.05)],
         ),
+
+        border: Border.all(color: color.withOpacity(.28)),
 
         boxShadow: [
           BoxShadow(
-            color: colors.first.withOpacity(.35),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: color.withOpacity(.18),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -115,56 +131,52 @@ class DashboardSummaryCards extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ////////////////////////////////////////////////////////////
-          /// Top Row
-          ////////////////////////////////////////////////////////////
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(icon, color: Colors.white, size: 26),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(.22),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
 
-              if (!hideChange) _changeBadge(change, isPositive),
+              if (!hideChange) _changeBadge(context, change, isPositive),
             ],
           ),
 
           const Spacer(),
 
-          ////////////////////////////////////////////////////////////
-          /// Value
-          ////////////////////////////////////////////////////////////
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: color,
             ),
           ),
 
           const Gap(4),
 
-          ////////////////////////////////////////////////////////////
-          /// Title
-          ////////////////////////////////////////////////////////////
-          Text(
-            title,
-            style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(.9)),
-          ),
+          Text(title, style: theme.textTheme.bodyMedium),
         ],
       ),
-    ).animate().fadeIn().scale(begin: const Offset(.95, .95));
+    ).animate().fadeIn().scale(begin: const Offset(.96, .96));
   }
 
   ////////////////////////////////////////////////////////////
-  /// Change Badge
+  /// CHANGE BADGE
   ////////////////////////////////////////////////////////////
 
-  Widget _changeBadge(double change, bool isPositive) {
+  Widget _changeBadge(BuildContext context, double change, bool isPositive) {
+    final color = isPositive ? ChartColors.success : ChartColors.error;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
 
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(.2),
+        color: color.withOpacity(.18),
         borderRadius: BorderRadius.circular(20),
       ),
 
@@ -173,18 +185,12 @@ class DashboardSummaryCards extends StatelessWidget {
           Icon(
             isPositive ? Icons.arrow_upward : Icons.arrow_downward,
             size: 14,
-            color: Colors.white,
+            color: color,
           ),
-
-          const Gap(2),
-
+          const Gap(4),
           Text(
             "${change.toStringAsFixed(1)}%",
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: color, fontWeight: FontWeight.w600),
           ),
         ],
       ),

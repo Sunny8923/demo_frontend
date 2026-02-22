@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/features/dashboard/admin/presentation/providers/admin_dashboard_provider.dart';
 import 'package:gap/gap.dart';
 
-class DashboardHeader extends ConsumerWidget {
-  final String adminName;
+class PartnerDashboardHeader extends StatelessWidget {
+  final String partnerName;
   final String range;
 
-  const DashboardHeader({
+  const PartnerDashboardHeader({
     super.key,
-    required this.adminName,
+    required this.partnerName,
     required this.range,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
     ////////////////////////////////////////////////////////////
-    /// PREMIUM THEME-BASED GRADIENT
+    /// SAME PREMIUM GRADIENT AS ADMIN
     ////////////////////////////////////////////////////////////
 
     final gradient = LinearGradient(
@@ -33,12 +31,8 @@ class DashboardHeader extends ConsumerWidget {
 
       decoration: BoxDecoration(
         gradient: gradient,
-
         borderRadius: BorderRadius.circular(22),
 
-        ////////////////////////////////////////////////////////////
-        /// PREMIUM SHADOW
-        ////////////////////////////////////////////////////////////
         boxShadow: [
           BoxShadow(
             color: scheme.primary.withOpacity(.25),
@@ -56,7 +50,7 @@ class DashboardHeader extends ConsumerWidget {
           ////////////////////////////////////////////////////////////
           Row(
             children: [
-              _Avatar(adminName),
+              _Avatar(partnerName),
 
               const Gap(12),
 
@@ -65,7 +59,7 @@ class DashboardHeader extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Admin Dashboard",
+                      "Partner Dashboard",
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -73,7 +67,7 @@ class DashboardHeader extends ConsumerWidget {
                     ),
 
                     Text(
-                      "Platform analytics & system overview",
+                      "Track your candidates & applications",
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withOpacity(.85),
                       ),
@@ -101,7 +95,7 @@ class DashboardHeader extends ConsumerWidget {
           const Gap(4),
 
           Text(
-            adminName,
+            partnerName,
             style: theme.textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -112,7 +106,7 @@ class DashboardHeader extends ConsumerWidget {
           const Gap(12),
 
           ////////////////////////////////////////////////////////////
-          /// STATUS
+          /// STATUS TEXT
           ////////////////////////////////////////////////////////////
           Row(
             children: [
@@ -128,7 +122,7 @@ class DashboardHeader extends ConsumerWidget {
               const Gap(8),
 
               Text(
-                "System active • Realtime analytics enabled",
+                "Partner account active",
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: Colors.white.withOpacity(.9),
                 ),
@@ -142,7 +136,7 @@ class DashboardHeader extends ConsumerWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// AVATAR
+/// Avatar
 ////////////////////////////////////////////////////////////
 
 class _Avatar extends StatelessWidget {
@@ -155,8 +149,10 @@ class _Avatar extends StatelessWidget {
     return CircleAvatar(
       radius: 20,
       backgroundColor: Colors.white.withOpacity(.18),
+
       child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : "A",
+        name.isNotEmpty ? name[0].toUpperCase() : "P",
+
         style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -167,66 +163,30 @@ class _Avatar extends StatelessWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// RANGE CHIP
+/// Range chip (UI only, no change logic needed)
 ////////////////////////////////////////////////////////////
 
-class _RangeChip extends ConsumerWidget {
+class _RangeChip extends StatelessWidget {
   final String range;
 
   const _RangeChip(this.range);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(.18),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _option(context, ref, "7d", range == "7d"),
-          _option(context, ref, "30d", range == "30d"),
-        ],
-      ),
-    );
-  }
 
-  Widget _option(
-    BuildContext context,
-    WidgetRef ref,
-    String value,
-    bool selected,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+      child: Text(
+        range.toUpperCase(),
 
-        onTap: () {
-          ref.read(adminDashboardProvider.notifier).changeRange(value);
-        },
-
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-
-          decoration: BoxDecoration(
-            color: selected
-                ? Colors.white.withOpacity(.28)
-                : Colors.transparent,
-
-            borderRadius: BorderRadius.circular(20),
-          ),
-
-          child: Text(
-            value.toUpperCase(),
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

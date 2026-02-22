@@ -8,7 +8,7 @@ class UserDashboardRepository {
   Future<UserDashboardModel> getDashboard() async {
     print("DEBUG: Fetching USER dashboard");
 
-    final response = await _dio.get("/dashboard/user");
+    final response = await _dio.get("/user/dashboard");
 
     print("DEBUG: USER dashboard response: ${response.data}");
 

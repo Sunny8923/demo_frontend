@@ -7,9 +7,9 @@ class PartnerDashboardRepository {
 
   Future<PartnerDashboardModel> getDashboard() async {
     try {
-      print("DEBUG: Repository → GET /dashboard/partner");
+      print("DEBUG: Repository → GET /partner/dashboard");
 
-      final response = await _dio.get("/dashboard/partner");
+      final response = await _dio.get("/partner/dashboard");
 
       print("DEBUG: Repository → Response: ${response.data}");
 

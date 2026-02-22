@@ -21,22 +21,31 @@ class PartnerModel {
   });
 
   factory PartnerModel.fromJson(Map<String, dynamic> json) {
+    ////////////////////////////////////////////////////////////
+    /// SAFE user parsing
+    ////////////////////////////////////////////////////////////
+
+    final user = json['user'];
+
     return PartnerModel(
-      id: json['id'],
+      id: json['id'] ?? "",
 
-      // FIX: correct backend field name
-      businessName: json['organisationName'],
+      businessName: json['organisationName'] ?? "",
 
-      // FIX: correct backend field name
-      phone: json['contactNumber'],
+      phone: json['contactNumber'] ?? "",
 
-      status: json['status'],
+      status: json['status'] ?? "PENDING",
 
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.tryParse(json['createdAt'] ?? "") ?? DateTime.now(),
 
-      userId: json['user']['id'],
-      userName: json['user']['name'],
-      userEmail: json['user']['email'],
+      ////////////////////////////////////////////////////////////
+      /// SAFE fallback logic
+      ////////////////////////////////////////////////////////////
+      userId: user != null ? user['id'] ?? "" : json['userId'] ?? "",
+
+      userName: user != null ? user['name'] ?? "Unknown" : "Unknown",
+
+      userEmail: user != null ? user['email'] ?? "" : "",
     );
   }
 }

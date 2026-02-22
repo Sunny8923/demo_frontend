@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/features/dashboard/admin/presentation/screens/create_recruiter_screen.dart';
 import 'package:gap/gap.dart';
 
-import '../../../../jobs/presentation/screens/create_single_job_screen.dart';
-import '../../../../jobs/presentation/screens/upload_csv_screen.dart';
-import '../../../../jobs/presentation/screens/admin_jobs_screen.dart';
-import '../../../../partners/presentation/screens/pending_partner_screen.dart';
-import '../../../../application/presentation/screens/admin_application_screeen.dart';
-import '../../../../application/presentation/screens/ats_pipeline_screen.dart';
+import '../../../../application/presentation/screens/my_application_screeen.dart';
+import '../../../../jobs/presentation/screens/jobs_list_screen.dart';
 
-class DashboardQuickActions extends StatelessWidget {
-  const DashboardQuickActions({super.key});
+class PartnerDashboardQuickActions extends StatelessWidget {
+  const PartnerDashboardQuickActions({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,14 +13,10 @@ class DashboardQuickActions extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Container(
-      ////////////////////////////////////////////////////////////
-      /// PREMIUM OUTER CARD (NEW)
-      ////////////////////////////////////////////////////////////
       padding: const EdgeInsets.all(16),
 
       decoration: BoxDecoration(
         color: scheme.surface,
-
         borderRadius: BorderRadius.circular(24),
 
         border: Border.all(color: scheme.outlineVariant.withOpacity(.35)),
@@ -66,7 +57,6 @@ class DashboardQuickActions extends StatelessWidget {
 
               Text(
                 "Quick Actions",
-
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -83,81 +73,35 @@ class DashboardQuickActions extends StatelessWidget {
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             childAspectRatio: 1.25,
 
             children: [
               _ActionCard(
-                icon: Icons.add_box_outlined,
-                label: "Create Job",
-                color: const Color(0xFF4F46E5),
-                onTap: () => _showCreateJobSheet(context),
-              ),
-
-              _ActionCard(
-                icon: Icons.person_add_alt_1_outlined,
-                label: "Create Recruiter",
-                color: const Color(0xFF2563EB),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CreateRecruiterScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              _ActionCard(
-                icon: Icons.verified_user_outlined,
-                label: "Approve Partners",
-                color: const Color(0xFF059669),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const PendingPartnerScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              _ActionCard(
                 icon: Icons.work_outline,
-                label: "View Jobs",
-                color: const Color(0xFFEA580C),
+                label: "Browse Jobs",
+                color: const Color(0xFF2563EB),
+
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AdminJobsScreen()),
+                    MaterialPageRoute(builder: (_) => const JobsListScreen()),
                   );
                 },
               ),
 
               _ActionCard(
                 icon: Icons.assignment_outlined,
-                label: "Applications",
-                color: const Color(0xFF0891B2),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const AdminApplicationsScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              _ActionCard(
-                icon: Icons.account_tree_outlined,
-                label: "ATS Pipeline",
+                label: "My Submissions",
                 color: const Color(0xFF7C3AED),
+
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const AtsPipelineScreen(),
+                      builder: (_) => const MyApplicationsScreen(),
                     ),
                   );
                 },
@@ -168,77 +112,10 @@ class DashboardQuickActions extends StatelessWidget {
       ),
     );
   }
-
-  //////////////////////////////////////////////////////////////
-  /// Create Job Bottom Sheet (UNCHANGED)
-  //////////////////////////////////////////////////////////////
-
-  void _showCreateJobSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Create Job",
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-              ),
-
-              const Gap(20),
-
-              ListTile(
-                leading: const Icon(Icons.add_box_outlined),
-                title: const Text("Create Single Job"),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CreateSingleJobScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              ListTile(
-                leading: const Icon(Icons.upload_file_outlined),
-                title: const Text("Upload CSV"),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const UploadCsvScreen()),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
 
 ////////////////////////////////////////////////////////////
-/// PREMIUM ACTION CARD (UPGRADED)
+/// ACTION CARD
 ////////////////////////////////////////////////////////////
 
 class _ActionCard extends StatefulWidget {
@@ -274,8 +151,8 @@ class _ActionCardState extends State<_ActionCard> {
         scale: hovered ? 1.03 : 1,
 
         child: InkWell(
-          onTap: widget.onTap,
           borderRadius: BorderRadius.circular(16),
+          onTap: widget.onTap,
 
           child: Ink(
             decoration: BoxDecoration(
@@ -294,6 +171,7 @@ class _ActionCardState extends State<_ActionCard> {
                   color: hovered
                       ? widget.color.withOpacity(.15)
                       : Colors.black.withOpacity(.04),
+
                   blurRadius: hovered ? 16 : 10,
                   offset: const Offset(0, 6),
                 ),

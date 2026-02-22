@@ -21,7 +21,7 @@ class AppTheme {
     );
 
     ////////////////////////////////////////////////////////////
-    /// CUSTOM SURFACE HIERARCHY (CRITICAL FOR PREMIUM LOOK)
+    /// PREMIUM SURFACE SYSTEM (PROPER DEPTH)
     ////////////////////////////////////////////////////////////
 
     final scheme = baseScheme.copyWith(
@@ -38,7 +38,7 @@ class AppTheme {
           : const Color(0xFF020617),
 
       surfaceContainer: brightness == Brightness.light
-          ? const Color(0xFFFFFFFF)
+          ? const Color(0xFFF8FAFC)
           : const Color(0xFF020617),
 
       surfaceContainerHigh: brightness == Brightness.light
@@ -51,7 +51,7 @@ class AppTheme {
     );
 
     ////////////////////////////////////////////////////////////
-    /// TEXT THEME
+    /// TEXT THEME (INTER FONT — MODERN STANDARD)
     ////////////////////////////////////////////////////////////
 
     final textTheme = GoogleFonts.interTextTheme()
@@ -64,6 +64,10 @@ class AppTheme {
           titleMedium: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
+          ),
+          bodyLarge: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
           ),
           bodyMedium: GoogleFonts.inter(
             fontSize: 14,
@@ -82,19 +86,32 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-
       brightness: brightness,
-
       colorScheme: scheme,
 
       ////////////////////////////////////////////////////////////
-      /// BACKGROUND LAYERING (MOST IMPORTANT)
+      /// BACKGROUND SYSTEM
       ////////////////////////////////////////////////////////////
       scaffoldBackgroundColor: scheme.surfaceContainerLowest,
-
       canvasColor: scheme.surfaceContainerLowest,
-
       dividerColor: scheme.outlineVariant,
+
+      ////////////////////////////////////////////////////////////
+      /// INTERACTIONS (MODERN FEEL)
+      ////////////////////////////////////////////////////////////
+      splashFactory: InkRipple.splashFactory,
+      highlightColor: Colors.transparent,
+      hoverColor: scheme.primary.withOpacity(.04),
+
+      ////////////////////////////////////////////////////////////
+      /// PAGE TRANSITIONS
+      ////////////////////////////////////////////////////////////
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
 
       ////////////////////////////////////////////////////////////
       /// TEXT
@@ -106,33 +123,31 @@ class AppTheme {
       ////////////////////////////////////////////////////////////
       appBarTheme: AppBarTheme(
         elevation: 0,
-        centerTitle: false,
         scrolledUnderElevation: 0,
+        centerTitle: false,
         backgroundColor: scheme.surfaceContainerLowest,
         foregroundColor: scheme.onSurface,
       ),
 
       ////////////////////////////////////////////////////////////
-      /// CARD (PREMIUM STYLE)
+      /// PREMIUM CARD
       ////////////////////////////////////////////////////////////
       cardTheme: CardThemeData(
         elevation: 0,
-
         color: scheme.surface,
-
         surfaceTintColor: Colors.transparent,
-
         margin: EdgeInsets.zero,
-
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-
-          side: BorderSide(color: scheme.outlineVariant.withOpacity(.6)),
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: scheme.outlineVariant.withOpacity(.5),
+            width: 1,
+          ),
         ),
       ),
 
       ////////////////////////////////////////////////////////////
-      /// CHIP THEME (FOR PILLS)
+      /// CHIP
       ////////////////////////////////////////////////////////////
       chipTheme: ChipThemeData(
         backgroundColor: scheme.surfaceContainerLow,
@@ -145,41 +160,34 @@ class AppTheme {
       ),
 
       ////////////////////////////////////////////////////////////
-      /// BUTTON THEME
+      /// BUTTON
       ////////////////////////////////////////////////////////////
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
-
           backgroundColor: scheme.primary,
-
           foregroundColor: scheme.onPrimary,
-
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
           ),
         ),
       ),
 
       ////////////////////////////////////////////////////////////
-      /// INPUT THEME
+      /// INPUT
       ////////////////////////////////////////////////////////////
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-
         fillColor: scheme.surfaceContainerLow,
 
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
 
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: scheme.primary, width: 1.5),
         ),
       ),
@@ -189,9 +197,8 @@ class AppTheme {
       ////////////////////////////////////////////////////////////
       drawerTheme: DrawerThemeData(
         backgroundColor: scheme.surface,
-
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.horizontal(right: Radius.circular(20)),
+          borderRadius: BorderRadius.horizontal(right: Radius.circular(24)),
         ),
       ),
 
@@ -204,7 +211,7 @@ class AppTheme {
       ),
 
       ////////////////////////////////////////////////////////////
-      /// ICON THEME
+      /// ICONS
       ////////////////////////////////////////////////////////////
       iconTheme: IconThemeData(color: scheme.onSurfaceVariant),
     );

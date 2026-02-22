@@ -6,18 +6,15 @@ class ApplicationRepository {
   final Dio _dio = ApiClient.instance;
 
   ////////////////////////////////////////////////////////////
-  /// APPLY TO JOB (FIXED — sends candidate object)
+  /// APPLY TO JOB
   ////////////////////////////////////////////////////////////
 
   Future<void> applyToJob({
     required String jobId,
-
-    /// required
     required String name,
     required String email,
     required String phone,
 
-    /// optional extended profile
     String? currentLocation,
     String? totalExperience,
     String? currentCompany,
@@ -27,50 +24,50 @@ class ApplicationRepository {
     String? skills,
     String? highestQualification,
   }) async {
-    ////////////////////////////////////////////////////////////
-    /// Build candidate object
-    ////////////////////////////////////////////////////////////
+    try {
+      final candidate = {
+        "name": name,
+        "email": email,
+        "phone": phone,
 
-    final candidate = {
-      "name": name,
-      "email": email,
-      "phone": phone,
+        if (currentLocation?.isNotEmpty == true)
+          "currentLocation": currentLocation,
 
-      if (currentLocation != null && currentLocation.isNotEmpty)
-        "currentLocation": currentLocation,
+        if (totalExperience?.isNotEmpty == true)
+          "totalExperience": double.tryParse(totalExperience!),
 
-      if (totalExperience != null && totalExperience.isNotEmpty)
-        "totalExperience": double.tryParse(totalExperience),
+        if (currentCompany?.isNotEmpty == true)
+          "currentCompany": currentCompany,
 
-      if (currentCompany != null && currentCompany.isNotEmpty)
-        "currentCompany": currentCompany,
+        if (currentDesignation?.isNotEmpty == true)
+          "currentDesignation": currentDesignation,
 
-      if (currentDesignation != null && currentDesignation.isNotEmpty)
-        "currentDesignation": currentDesignation,
+        if (expectedSalary?.isNotEmpty == true)
+          "expectedSalary": double.tryParse(expectedSalary!),
 
-      if (expectedSalary != null && expectedSalary.isNotEmpty)
-        "expectedSalary": double.tryParse(expectedSalary),
+        if (noticePeriodDays?.isNotEmpty == true)
+          "noticePeriodDays": int.tryParse(noticePeriodDays!),
 
-      if (noticePeriodDays != null && noticePeriodDays.isNotEmpty)
-        "noticePeriodDays": int.tryParse(noticePeriodDays),
+        if (skills?.isNotEmpty == true) "skills": skills,
 
-      if (skills != null && skills.isNotEmpty) "skills": skills,
+        if (highestQualification?.isNotEmpty == true)
+          "highestQualification": highestQualification,
+      };
 
-      if (highestQualification != null && highestQualification.isNotEmpty)
-        "highestQualification": highestQualification,
-    };
+      final body = {"jobId": jobId, "candidate": candidate};
 
-    ////////////////////////////////////////////////////////////
-    /// Final request body (IMPORTANT FIX)
-    ////////////////////////////////////////////////////////////
+      final response = await _dio.post("/applications/apply", data: body);
 
-    final data = {"jobId": jobId, "candidate": candidate};
+      final data = response.data;
 
-    ////////////////////////////////////////////////////////////
-    /// API call
-    ////////////////////////////////////////////////////////////
-
-    await _dio.post("/applications/apply", data: data);
+      if (data == null || data["success"] != true) {
+        throw Exception(data?["message"] ?? "Application failed");
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data?["message"] ?? e.message ?? "Application failed",
+      );
+    }
   }
 
   ////////////////////////////////////////////////////////////
@@ -78,11 +75,29 @@ class ApplicationRepository {
   ////////////////////////////////////////////////////////////
 
   Future<List<ApplicationModel>> getMyApplications() async {
-    final response = await _dio.get("/applications/my");
+    try {
+      final response = await _dio.get("/applications/my");
 
-    final List list = response.data['applications'];
+      final data = response.data;
 
-    return list.map((e) => ApplicationModel.fromJson(e)).toList();
+      if (data == null || data["success"] != true) {
+        throw Exception("Failed to fetch applications");
+      }
+
+      final list = data["data"];
+
+      if (list == null || list is! List) {
+        return [];
+      }
+
+      return list.map((e) => ApplicationModel.fromJson(e)).toList();
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data?["message"] ??
+            e.message ??
+            "Failed to fetch applications",
+      );
+    }
   }
 
   ////////////////////////////////////////////////////////////
@@ -90,11 +105,37 @@ class ApplicationRepository {
   ////////////////////////////////////////////////////////////
 
   Future<List<ApplicationModel>> getAllApplications() async {
-    final response = await _dio.get("/applications");
+    try {
+      final response = await _dio.get("/applications");
 
-    final List list = response.data['applications'];
+      final data = response.data;
 
-    return list.map((e) => ApplicationModel.fromJson(e)).toList();
+      print("DEBUG APPLICATION RESPONSE: $data");
+
+      if (data == null) {
+        throw Exception("Empty server response");
+      }
+
+      if (data["success"] != true) {
+        throw Exception(data["message"] ?? "Failed to fetch applications");
+      }
+
+      final list = data["data"];
+
+      if (list == null || list is! List) {
+        return [];
+      }
+
+      return list.map((e) => ApplicationModel.fromJson(e)).toList();
+    } on DioException catch (e) {
+      print("DEBUG APPLICATION ERROR: ${e.response?.data}");
+
+      throw Exception(
+        e.response?.data?["message"] ??
+            e.message ??
+            "Failed to fetch applications",
+      );
+    }
   }
 
   ////////////////////////////////////////////////////////////
@@ -105,9 +146,21 @@ class ApplicationRepository {
     required String applicationId,
     required String pipelineStage,
   }) async {
-    await _dio.patch(
-      "/applications/$applicationId/status",
-      data: {"pipelineStage": pipelineStage},
-    );
+    try {
+      final response = await _dio.patch(
+        "/applications/$applicationId/status",
+        data: {"pipelineStage": pipelineStage},
+      );
+
+      final data = response.data;
+
+      if (data == null || data["success"] != true) {
+        throw Exception(data?["message"] ?? "Failed to update status");
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data?["message"] ?? e.message ?? "Failed to update status",
+      );
+    }
   }
 }

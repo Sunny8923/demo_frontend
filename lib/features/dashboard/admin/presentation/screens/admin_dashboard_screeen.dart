@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:frontend/features/dashboard/admin/presentation/widgets/dashboard_distribution_chart.dart';
-import 'package:frontend/features/dashboard/admin/presentation/widgets/dashboard_pipeline.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../../core/ui/app_scaffold.dart';
 
 import '../../../../auth/presentation/providers/current_user_provider.dart';
-
 import '../providers/admin_dashboard_provider.dart';
 
 import '../widgets/dashboard_header.dart';
 import '../widgets/dashboard_summary_cards.dart';
-
+import '../widgets/dashboard_pipeline.dart';
 import '../widgets/dashboard_trends_chart.dart';
+import '../widgets/dashboard_distribution_chart.dart';
 import '../widgets/dashboard_leaderboards.dart';
 import '../widgets/dashboard_quick_actions.dart';
 
@@ -26,6 +24,9 @@ class AdminDashboardScreen extends ConsumerWidget {
     final dashboardState = ref.watch(adminDashboardProvider);
 
     final currentUser = ref.watch(currentUserProvider).value;
+
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return AppScaffold(
       title: "Admin Dashboard",
@@ -40,86 +41,154 @@ class AdminDashboardScreen extends ConsumerWidget {
 
           error: (error, stack) => _DashboardError(
             error: error.toString(),
-            onRetry: () {
-              ref.read(adminDashboardProvider.notifier).refresh();
-            },
+            onRetry: () => ref.read(adminDashboardProvider.notifier).refresh(),
           ),
 
           data: (dashboard) {
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            return DefaultTabController(
+              length: 4,
 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
                   ////////////////////////////////////////////////////////////
-                  /// Header
+                  /// SCROLLABLE TOP SECTION
                   ////////////////////////////////////////////////////////////
-                  DashboardHeader(
-                    adminName: currentUser?.name ?? "Admin",
-                    range: dashboard.range,
-                  ).animate().fadeIn(duration: 400.ms).slideY(begin: .2),
+                  Expanded(
+                    child: NestedScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
 
-                  const Gap(20),
+                      headerSliverBuilder: (context, innerBoxScrolled) {
+                        return [
+                          ////////////////////////////////////////////////////
+                          /// HEADER
+                          ////////////////////////////////////////////////////
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
 
-                  ////////////////////////////////////////////////////////////
-                  /// Summary Cards
-                  ////////////////////////////////////////////////////////////
-                  DashboardSummaryCards(
-                    summary: dashboard.summary,
-                    summaryChange: dashboard.summaryChange,
-                  ).animate().fadeIn(delay: 100.ms).slideY(begin: .1),
+                              child:
+                                  DashboardHeader(
+                                        adminName: currentUser?.name ?? "Admin",
+                                        range: dashboard.range,
+                                      )
+                                      .animate()
+                                      .fadeIn(duration: 400.ms)
+                                      .slideY(begin: .2),
+                            ),
+                          ),
 
-                  const Gap(24),
+                          ////////////////////////////////////////////////////
+                          /// SUMMARY CARDS
+                          ////////////////////////////////////////////////////
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
 
-                  ////////////////////////////////////////////////////////////
-                  /// Pipeline Funnel
-                  ////////////////////////////////////////////////////////////
-                  DashboardPipelineWidget(
-                    pipeline: dashboard.pipeline,
-                  ).animate().fadeIn(delay: 200.ms).slideY(begin: .1),
+                              child:
+                                  DashboardSummaryCards(
+                                        summary: dashboard.summary,
+                                        summaryChange: dashboard.summaryChange,
+                                      )
+                                      .animate()
+                                      .fadeIn(delay: 100.ms)
+                                      .slideY(begin: .1),
+                            ),
+                          ),
 
-                  const Gap(24),
+                          ////////////////////////////////////////////////////
+                          /// PREMIUM TAB BAR
+                          ////////////////////////////////////////////////////
+                          SliverPersistentHeader(
+                            pinned: true,
 
-                  ////////////////////////////////////////////////////////////
-                  /// Trends Chart
-                  ////////////////////////////////////////////////////////////
-                  DashboardTrendsChart(
-                    trends: dashboard.trends,
-                  ).animate().fadeIn(delay: 300.ms).slideY(begin: .1),
+                            delegate: _PremiumTabBarDelegate(
+                              TabBar(
+                                isScrollable: true,
 
-                  const Gap(24),
+                                labelStyle: theme.textTheme.labelLarge,
 
-                  ////////////////////////////////////////////////////////////
-                  /// Distribution Chart
-                  ////////////////////////////////////////////////////////////
-                  AdminDistributionChart(
-                    distribution: dashboard.distribution,
-                  ).animate().fadeIn(delay: 350.ms).slideY(begin: .1),
+                                indicatorColor: scheme.primary,
 
-                  const Gap(24),
+                                indicatorWeight: 2.5,
 
-                  ////////////////////////////////////////////////////////////
-                  /// Leaderboards
-                  ////////////////////////////////////////////////////////////
-                  DashboardLeaderboardsWidget(
-                    leaderboards: dashboard.leaderboards,
-                  ).animate().fadeIn(delay: 400.ms).slideY(begin: .1),
+                                labelColor: scheme.primary,
 
-                  const Gap(24),
+                                unselectedLabelColor: scheme.onSurfaceVariant,
 
-                  ////////////////////////////////////////////////////////////
-                  /// Quick Actions (your existing admin actions)
-                  ////////////////////////////////////////////////////////////
-                  DashboardQuickActions()
-                      .animate()
-                      .fadeIn(delay: 500.ms)
-                      .slideY(begin: .1),
+                                tabs: const [
+                                  Tab(text: "Actions"),
+                                  Tab(text: "Overview"),
+                                  Tab(text: "Analytics"),
+                                  Tab(text: "Leaderboards"),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ];
+                      },
 
-                  const Gap(32),
+                      ////////////////////////////////////////////////////////////
+                      /// TAB CONTENT
+                      ////////////////////////////////////////////////////////////
+                      body: TabBarView(
+                        children: [
+                          ////////////////////////////////////////////////////
+                          /// ACTIONS TAB
+                          ////////////////////////////////////////////////////
+                          SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+
+                            child: DashboardQuickActions()
+                                .animate()
+                                .fadeIn()
+                                .slideY(begin: .1),
+                          ),
+                          ////////////////////////////////////////////////////
+                          /// OVERVIEW TAB
+                          ////////////////////////////////////////////////////
+                          SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+
+                            child: DashboardPipelineWidget(
+                              pipeline: dashboard.pipeline,
+                            ).animate().fadeIn().slideY(begin: .1),
+                          ),
+
+                          ////////////////////////////////////////////////////
+                          /// ANALYTICS TAB
+                          ////////////////////////////////////////////////////
+                          SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+
+                            child: Column(
+                              children: [
+                                DashboardTrendsChart(trends: dashboard.trends),
+
+                                const Gap(24),
+
+                                AdminDistributionChart(
+                                  distribution: dashboard.distribution,
+                                ),
+                              ],
+                            ).animate().fadeIn().slideY(begin: .1),
+                          ),
+
+                          ////////////////////////////////////////////////////
+                          /// LEADERBOARDS TAB
+                          ////////////////////////////////////////////////////
+                          SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+
+                            child: DashboardLeaderboardsWidget(
+                              leaderboards: dashboard.leaderboards,
+                            ).animate().fadeIn().slideY(begin: .1),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
@@ -131,7 +200,45 @@ class AdminDashboardScreen extends ConsumerWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// Loading State
+/// PREMIUM TAB BAR DELEGATE
+////////////////////////////////////////////////////////////
+
+class _PremiumTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+
+  const _PremiumTabBarDelegate(this.tabBar);
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      color: scheme.surface,
+
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+
+      alignment: Alignment.centerLeft,
+
+      child: tabBar,
+    );
+  }
+
+  @override
+  double get maxExtent => 52;
+
+  @override
+  double get minExtent => 52;
+
+  @override
+  bool shouldRebuild(_) => false;
+}
+
+////////////////////////////////////////////////////////////
+/// Loading
 ////////////////////////////////////////////////////////////
 
 class _DashboardLoading extends StatelessWidget {
@@ -149,7 +256,7 @@ class _DashboardLoading extends StatelessWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// Error State
+/// Error
 ////////////////////////////////////////////////////////////
 
 class _DashboardError extends StatelessWidget {
