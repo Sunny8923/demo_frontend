@@ -71,7 +71,6 @@ class AdminDashboardScreen extends ConsumerWidget {
                               child:
                                   DashboardHeader(
                                         adminName: currentUser?.name ?? "Admin",
-                                        range: dashboard.range,
                                       )
                                       .animate()
                                       .fadeIn(duration: 400.ms)

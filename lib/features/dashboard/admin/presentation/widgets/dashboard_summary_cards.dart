@@ -36,7 +36,6 @@ class DashboardSummaryCards extends StatelessWidget {
           Icons.description_outlined,
           ChartColors.primary,
         ),
-
         _card(
           context,
           "Hires",
@@ -45,7 +44,6 @@ class DashboardSummaryCards extends StatelessWidget {
           Icons.person_add_alt_outlined,
           ChartColors.success,
         ),
-
         _card(
           context,
           "Jobs",
@@ -54,7 +52,6 @@ class DashboardSummaryCards extends StatelessWidget {
           Icons.work_outline,
           ChartColors.warning,
         ),
-
         _card(
           context,
           "Partners",
@@ -63,7 +60,6 @@ class DashboardSummaryCards extends StatelessWidget {
           Icons.handshake_outlined,
           ChartColors.violet,
         ),
-
         _card(
           context,
           "Recruiters",
@@ -72,7 +68,6 @@ class DashboardSummaryCards extends StatelessWidget {
           Icons.groups_outlined,
           ChartColors.cyan,
         ),
-
         _card(
           context,
           "Active Applications",
@@ -87,7 +82,7 @@ class DashboardSummaryCards extends StatelessWidget {
   }
 
   ////////////////////////////////////////////////////////////
-  /// PREMIUM COLORED CARD
+  /// FIXED CARD (NO OVERFLOW EVER)
   ////////////////////////////////////////////////////////////
 
   Widget _card(
@@ -107,18 +102,12 @@ class DashboardSummaryCards extends StatelessWidget {
 
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-
-        ////////////////////////////////////////////////////////////
-        /// SUBTLE PREMIUM GRADIENT
-        ////////////////////////////////////////////////////////////
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [color.withOpacity(.18), color.withOpacity(.05)],
         ),
-
         border: Border.all(color: color.withOpacity(.28)),
-
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(.18),
@@ -131,9 +120,12 @@ class DashboardSummaryCards extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ////////////////////////////////////////////////////////////
+          /// TOP ROW (SAFE)
+          ////////////////////////////////////////////////////////////
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              /// ICON
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -143,30 +135,59 @@ class DashboardSummaryCards extends StatelessWidget {
                 child: Icon(icon, color: color, size: 20),
               ),
 
-              if (!hideChange) _changeBadge(context, change, isPositive),
+              const Spacer(),
+
+              /// CHANGE BADGE (SAFE WIDTH)
+              if (!hideChange)
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: _changeBadge(context, change, isPositive),
+                  ),
+                ),
             ],
           ),
 
           const Spacer(),
 
-          Text(
-            value,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: color,
+          ////////////////////////////////////////////////////////////
+          /// VALUE (SAFE)
+          ////////////////////////////////////////////////////////////
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
             ),
           ),
 
           const Gap(4),
 
-          Text(title, style: theme.textTheme.bodyMedium),
+          ////////////////////////////////////////////////////////////
+          /// TITLE (SAFE)
+          ////////////////////////////////////////////////////////////
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodyMedium,
+          ),
         ],
       ),
     ).animate().fadeIn().scale(begin: const Offset(.96, .96));
   }
 
   ////////////////////////////////////////////////////////////
-  /// CHANGE BADGE
+  /// CHANGE BADGE (SAFE VERSION)
   ////////////////////////////////////////////////////////////
 
   Widget _changeBadge(BuildContext context, double change, bool isPositive) {
@@ -181,6 +202,7 @@ class DashboardSummaryCards extends StatelessWidget {
       ),
 
       child: Row(
+        mainAxisSize: MainAxisSize.min, // IMPORTANT FIX
         children: [
           Icon(
             isPositive ? Icons.arrow_upward : Icons.arrow_downward,
@@ -190,6 +212,8 @@ class DashboardSummaryCards extends StatelessWidget {
           const Gap(4),
           Text(
             "${change.toStringAsFixed(1)}%",
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(color: color, fontWeight: FontWeight.w600),
           ),
         ],

@@ -5,22 +5,18 @@ import 'package:gap/gap.dart';
 
 class DashboardHeader extends ConsumerWidget {
   final String adminName;
-  final String range;
 
-  const DashboardHeader({
-    super.key,
-    required this.adminName,
-    required this.range,
-  });
+  const DashboardHeader({super.key, required this.adminName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    ////////////////////////////////////////////////////////////
-    /// PREMIUM THEME-BASED GRADIENT
-    ////////////////////////////////////////////////////////////
+    /// WATCH PROVIDER RANGE DIRECTLY
+    final range = ref.watch(
+      adminDashboardProvider.notifier.select((n) => n.currentRange),
+    );
 
     final gradient = LinearGradient(
       begin: Alignment.topLeft,
@@ -33,12 +29,7 @@ class DashboardHeader extends ConsumerWidget {
 
       decoration: BoxDecoration(
         gradient: gradient,
-
         borderRadius: BorderRadius.circular(22),
-
-        ////////////////////////////////////////////////////////////
-        /// PREMIUM SHADOW
-        ////////////////////////////////////////////////////////////
         boxShadow: [
           BoxShadow(
             color: scheme.primary.withOpacity(.25),
@@ -51,9 +42,6 @@ class DashboardHeader extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ////////////////////////////////////////////////////////////
-          /// TOP ROW
-          ////////////////////////////////////////////////////////////
           Row(
             children: [
               _Avatar(adminName),
@@ -71,7 +59,6 @@ class DashboardHeader extends ConsumerWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-
                     Text(
                       "Platform analytics & system overview",
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -82,15 +69,13 @@ class DashboardHeader extends ConsumerWidget {
                 ),
               ),
 
+              /// NOW THIS UPDATES CORRECTLY
               _RangeChip(range),
             ],
           ),
 
           const Gap(18),
 
-          ////////////////////////////////////////////////////////////
-          /// WELCOME TEXT
-          ////////////////////////////////////////////////////////////
           Text(
             "Welcome back",
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -105,35 +90,7 @@ class DashboardHeader extends ConsumerWidget {
             style: theme.textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
             ),
-          ),
-
-          const Gap(12),
-
-          ////////////////////////////////////////////////////////////
-          /// STATUS
-          ////////////////////////////////////////////////////////////
-          Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-              ),
-
-              const Gap(8),
-
-              Text(
-                "System active • Realtime analytics enabled",
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withOpacity(.9),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -177,55 +134,50 @@ class _RangeChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(adminDashboardProvider.notifier);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(.18),
         borderRadius: BorderRadius.circular(20),
       ),
+
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _option(context, ref, "7d", range == "7d"),
-          _option(context, ref, "30d", range == "30d"),
+          _button("7D", "7d", range == "7d", notifier),
+          _button("30D", "30d", range == "30d", notifier),
         ],
       ),
     );
   }
 
-  Widget _option(
-    BuildContext context,
-    WidgetRef ref,
+  Widget _button(
+    String text,
     String value,
     bool selected,
+    AdminDashboardNotifier notifier,
   ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
 
-        onTap: () {
-          ref.read(adminDashboardProvider.notifier).changeRange(value);
-        },
+      onTap: () {
+        notifier.changeRange(value);
+      },
 
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
 
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white.withOpacity(.28) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
 
-          decoration: BoxDecoration(
-            color: selected
-                ? Colors.white.withOpacity(.28)
-                : Colors.transparent,
-
-            borderRadius: BorderRadius.circular(20),
-          ),
-
-          child: Text(
-            value.toUpperCase(),
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ),

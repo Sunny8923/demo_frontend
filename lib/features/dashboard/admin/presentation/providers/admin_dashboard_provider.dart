@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/dashboard/admin/data/model/admin_dashboard_model.dart';
-
 import '../../data/repository/admin_dashboard_repository.dart';
 
 final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((
@@ -10,7 +9,7 @@ final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((
 });
 
 ////////////////////////////////////////////////////////////
-/// Dashboard Provider (FULL ANALYTICS MODEL)
+/// Dashboard Provider (ULTRA SMOOTH RANGE SWITCH)
 ////////////////////////////////////////////////////////////
 
 final adminDashboardProvider =
@@ -23,79 +22,111 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
   late final AdminDashboardRepository _repository;
 
   ////////////////////////////////////////////////////////////
-  /// STORE CURRENT RANGE
+  /// CACHE FOR BOTH RANGES
+  ////////////////////////////////////////////////////////////
+
+  final Map<String, AdminDashboardData> _cache = {};
+
+  ////////////////////////////////////////////////////////////
+  /// CURRENT RANGE
   ////////////////////////////////////////////////////////////
 
   String _currentRange = "7d";
 
   ////////////////////////////////////////////////////////////
-  /// BUILD (initial load)
+  /// BUILD → PRELOAD BOTH RANGES
   ////////////////////////////////////////////////////////////
 
   @override
   Future<AdminDashboardData> build() async {
-    print("DEBUG: AdminDashboardProvider → build()");
-
     _repository = ref.read(adminDashboardRepositoryProvider);
 
-    return _fetchDashboard();
+    print("DEBUG: Preloading dashboard ranges");
+
+    /// Fetch both ranges in parallel
+    final results = await Future.wait([
+      _repository.getDashboardStats(range: "7d"),
+      _repository.getDashboardStats(range: "30d"),
+    ]);
+
+    /// Store in cache
+    _cache["7d"] = results[0];
+    _cache["30d"] = results[1];
+
+    print("DEBUG: Preload complete");
+
+    /// Return default
+    return _cache[_currentRange]!;
   }
 
   ////////////////////////////////////////////////////////////
-  /// INTERNAL FETCH METHOD
-  ////////////////////////////////////////////////////////////
-
-  Future<AdminDashboardData> _fetchDashboard() async {
-    print("DEBUG: Fetch dashboard range = $_currentRange");
-
-    final dashboard = await _repository.getDashboardStats(range: _currentRange);
-
-    return dashboard;
-  }
-
-  ////////////////////////////////////////////////////////////
-  /// SWITCH RANGE (KEY FEATURE)
+  /// CHANGE RANGE (INSTANT SWITCH)
   ////////////////////////////////////////////////////////////
 
   Future<void> changeRange(String range) async {
     if (_currentRange == range) return;
 
-    print("DEBUG: Changing range → $range");
+    print("DEBUG: Switching range instantly → $range");
 
     _currentRange = range;
 
-    final previous = state;
+    /// Instant switch from cache (NO LOADING STATE)
+    if (_cache.containsKey(range)) {
+      state = AsyncValue.data(_cache[range]!);
 
-    state = await AsyncValue.guard(() async {
-      return await _fetchDashboard();
-    });
+      /// Refresh silently in background
+      _refreshInBackground(range);
+    } else {
+      /// fallback (rare case)
+      state = const AsyncValue.loading();
 
-    /// restore previous data if error
-    if (state.hasError && previous.hasValue) {
-      state = previous;
+      final data = await _repository.getDashboardStats(range: range);
+
+      _cache[range] = data;
+
+      state = AsyncValue.data(data);
     }
   }
 
   ////////////////////////////////////////////////////////////
-  /// REFRESH CURRENT RANGE
+  /// BACKGROUND REFRESH (NO UI BLOCK)
+  ////////////////////////////////////////////////////////////
+
+  Future<void> _refreshInBackground(String range) async {
+    try {
+      print("DEBUG: Background refresh → $range");
+
+      final fresh = await _repository.getDashboardStats(range: range);
+
+      _cache[range] = fresh;
+
+      /// update UI only if still same range
+      if (_currentRange == range) {
+        state = AsyncValue.data(fresh);
+      }
+    } catch (_) {
+      print("DEBUG: Background refresh failed (ignored)");
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
+  /// MANUAL REFRESH
   ////////////////////////////////////////////////////////////
 
   Future<void> refresh() async {
-    print("DEBUG: Refresh dashboard → $_currentRange");
+    final range = _currentRange;
 
-    final previous = state;
+    print("DEBUG: Manual refresh → $range");
 
-    state = await AsyncValue.guard(() async {
-      return await _fetchDashboard();
-    });
+    final fresh = await _repository.getDashboardStats(range: range);
 
-    if (state.hasError && previous.hasValue) {
-      state = previous;
-    }
+    _cache[range] = fresh;
+
+    state = AsyncValue.data(fresh);
   }
 
   ////////////////////////////////////////////////////////////
-  /// GET CURRENT RANGE (for UI)
+  /// GET CURRENT RANGE
   ////////////////////////////////////////////////////////////
 
   String get currentRange => _currentRange;

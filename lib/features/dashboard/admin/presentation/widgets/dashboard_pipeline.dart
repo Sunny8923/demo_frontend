@@ -8,7 +8,7 @@ class DashboardPipelineWidget extends StatelessWidget {
   const DashboardPipelineWidget({super.key, required this.pipeline});
 
   ////////////////////////////////////////////////////////////
-  /// Premium stage configuration with colors
+  /// STAGE CONFIG
   ////////////////////////////////////////////////////////////
 
   static const List<_PipelineStageMeta> _stages = [
@@ -18,28 +18,24 @@ class DashboardPipelineWidget extends StatelessWidget {
       icon: Icons.inbox_outlined,
       color: Color(0xff6366F1),
     ),
-
     _PipelineStageMeta(
       key: "SCREENING",
       label: "Screening",
       icon: Icons.search_outlined,
       color: Color(0xff8B5CF6),
     ),
-
     _PipelineStageMeta(
       key: "INTERVIEW_SCHEDULED",
       label: "Interview",
       icon: Icons.event_outlined,
       color: Color(0xffF59E0B),
     ),
-
     _PipelineStageMeta(
       key: "OFFER_SENT",
       label: "Offer",
       icon: Icons.description_outlined,
       color: Color(0xffEC4899),
     ),
-
     _PipelineStageMeta(
       key: "HIRED",
       label: "Hired",
@@ -48,96 +44,80 @@ class DashboardPipelineWidget extends StatelessWidget {
     ),
   ];
 
+  ////////////////////////////////////////////////////////////
+  /// BUILD
+  ////////////////////////////////////////////////////////////
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ////////////////////////////////////////////////////////////
-        /// Title
-        ////////////////////////////////////////////////////////////
-        Text(
-          "Hiring Pipeline",
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [Color(0xff0F172A), Color(0xff111827)],
         ),
-
-        const Gap(14),
-
-        ////////////////////////////////////////////////////////////
-        /// Premium container
-        ////////////////////////////////////////////////////////////
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
-
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-
-            gradient: LinearGradient(
-              colors: [const Color(0xff0F172A), const Color(0xff111827)],
-            ),
-
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(.35),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.35),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
+        ],
+      ),
 
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: List.generate(_stages.length, (index) {
-                final stage = _stages[index];
+      ////////////////////////////////////////////////////////////
+      /// FIXED HEIGHT FOR PERFECT CURVE
+      ////////////////////////////////////////////////////////////
+      child: SizedBox(
+        height: 320,
 
-                final count = pipeline.stages[stage.key] ?? 0;
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              children: [
+                ////////////////////////////////////////////////////////////
+                /// S CURVE CONNECTOR
+                ////////////////////////////////////////////////////////////
+                CustomPaint(
+                  size: Size(constraints.maxWidth, constraints.maxHeight),
+                  painter: _SCurvePainter(),
+                ),
 
-                final isLast = index == _stages.length - 1;
+                ////////////////////////////////////////////////////////////
+                /// STAGE NODES
+                ////////////////////////////////////////////////////////////
+                _buildNode(_stages[0], 0.08, 0.05),
+                _buildNode(_stages[1], 0.78, 0.05),
 
-                return Row(
-                  children: [
-                    _PremiumStageItem(stage: stage, count: count),
+                _buildNode(_stages[2], 0.78, 0.55),
+                _buildNode(_stages[3], 0.08, 0.55),
 
-                    if (!isLast)
-                      _Connector(
-                        fromColor: stage.color,
-                        toColor: _stages[index + 1].color,
-                      ),
-                  ],
-                );
-              }),
-            ),
-          ),
+                _buildNode(_stages[4], 0.43, 0.95),
+              ],
+            );
+          },
         ),
-      ],
+      ),
     );
   }
-}
 
-////////////////////////////////////////////////////////////
-/// Premium Stage Item
-////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////
+  /// NODE POSITIONER
+  ////////////////////////////////////////////////////////////
 
-class _PremiumStageItem extends StatelessWidget {
-  final _PipelineStageMeta stage;
-  final int count;
+  Widget _buildNode(_PipelineStageMeta stage, double x, double y) {
+    final count = pipeline.stages[stage.key] ?? 0;
 
-  const _PremiumStageItem({required this.stage, required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 110,
+    return Align(
+      alignment: Alignment(x * 2 - 1, y * 2 - 1),
 
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           ////////////////////////////////////////////////////////////
-          /// Gradient icon circle
+          /// ICON CIRCLE
           ////////////////////////////////////////////////////////////
           Container(
             padding: const EdgeInsets.all(14),
@@ -150,49 +130,42 @@ class _PremiumStageItem extends StatelessWidget {
               ),
 
               boxShadow: [
-                BoxShadow(
-                  color: stage.color.withOpacity(.5),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
+                BoxShadow(color: stage.color.withOpacity(.5), blurRadius: 16),
               ],
             ),
 
             child: Icon(stage.icon, color: Colors.white, size: 20),
           ),
 
-          const Gap(12),
+          const Gap(8),
 
           ////////////////////////////////////////////////////////////
-          /// Count
+          /// COUNT
           ////////////////////////////////////////////////////////////
           Text(
             _format(count),
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
               color: Colors.white,
             ),
           ),
 
-          const Gap(4),
-
           ////////////////////////////////////////////////////////////
-          /// Label
+          /// LABEL
           ////////////////////////////////////////////////////////////
           Text(
             stage.label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(.7),
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(.7)),
           ),
         ],
       ),
     );
   }
+
+  ////////////////////////////////////////////////////////////
+  /// NUMBER FORMAT
+  ////////////////////////////////////////////////////////////
 
   String _format(int number) {
     if (number >= 1000000) {
@@ -208,34 +181,82 @@ class _PremiumStageItem extends StatelessWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// Premium connector line
+/// S CURVE PAINTER
 ////////////////////////////////////////////////////////////
 
-class _Connector extends StatelessWidget {
-  final Color fromColor;
-  final Color toColor;
+class _SCurvePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withOpacity(.25)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
 
-  const _Connector({required this.fromColor, required this.toColor});
+    final path = Path();
+
+    ////////////////////////////////////////////////////////////
+    /// YOUR NODE POSITIONS (MATCH YOUR _buildNode)
+    ////////////////////////////////////////////////////////////
+
+    final p1 = Offset(size.width * 0.08, size.height * 0.05);
+    final p2 = Offset(size.width * 0.78, size.height * 0.05);
+    final p3 = Offset(size.width * 0.78, size.height * 0.55);
+    final p4 = Offset(size.width * 0.08, size.height * 0.55);
+    final p5 = Offset(size.width * 0.43, size.height * 0.95);
+
+    ////////////////////////////////////////////////////////////
+    /// START FROM NODE 1
+    ////////////////////////////////////////////////////////////
+
+    path.moveTo(p1.dx, p1.dy);
+
+    ////////////////////////////////////////////////////////////
+    /// 1 → 2 STRAIGHT LINE
+    ////////////////////////////////////////////////////////////
+
+    path.lineTo(p2.dx, p2.dy);
+
+    ////////////////////////////////////////////////////////////
+    /// 2 → 3 SEMICIRCLE CURVE (RIGHT SIDE DOWN)
+    ////////////////////////////////////////////////////////////
+
+    path.arcToPoint(
+      p3,
+      radius: Radius.circular(size.width * 0.35),
+      clockwise: true,
+    );
+
+    ////////////////////////////////////////////////////////////
+    /// 3 → 4 STRAIGHT LINE
+    ////////////////////////////////////////////////////////////
+
+    path.lineTo(p4.dx, p4.dy);
+
+    ////////////////////////////////////////////////////////////
+    /// 4 → 5 CURVE START → STRAIGHT END
+    ////////////////////////////////////////////////////////////
+
+    final controlPoint = Offset(
+      size.width * 0.08, // start vertical
+      size.height * 0.80, // curve depth
+    );
+
+    path.quadraticBezierTo(controlPoint.dx, controlPoint.dy, p5.dx, p5.dy);
+
+    ////////////////////////////////////////////////////////////
+    /// DRAW
+    ////////////////////////////////////////////////////////////
+
+    canvas.drawPath(path, paint);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6),
-
-      width: 36,
-      height: 4,
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-
-        gradient: LinearGradient(colors: [fromColor, toColor]),
-      ),
-    );
-  }
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
 
 ////////////////////////////////////////////////////////////
-/// Stage metadata
+/// META CLASS
 ////////////////////////////////////////////////////////////
 
 class _PipelineStageMeta {
