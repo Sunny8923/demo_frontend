@@ -48,14 +48,12 @@ class _AdminDistributionChartState extends State<AdminDistributionChart> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ////////////////////////////////////////////////////////////
-        /// HEADER (UNCHANGED)
+        /// HEADER
         ////////////////////////////////////////////////////////////
         Row(
           children: [
             Icon(Icons.pie_chart_outline, color: ChartColors.primary),
-
             const Gap(8),
-
             Expanded(
               child: Text(
                 "Applications Distribution",
@@ -70,17 +68,12 @@ class _AdminDistributionChartState extends State<AdminDistributionChart> {
         const Gap(16),
 
         ////////////////////////////////////////////////////////////
-        /// TOGGLE (MOVED OUTSIDE CONTAINER)
+        /// TOGGLE
         ////////////////////////////////////////////////////////////
         PremiumPillToggle<DistributionType>(
           selected: selected,
-
           values: DistributionType.values,
-
-          onChanged: (value) {
-            setState(() => selected = value);
-          },
-
+          onChanged: (value) => setState(() => selected = value),
           labelBuilder: (type) {
             switch (type) {
               case DistributionType.source:
@@ -91,7 +84,6 @@ class _AdminDistributionChartState extends State<AdminDistributionChart> {
                 return "Jobs";
             }
           },
-
           colorBuilder: (type) {
             switch (type) {
               case DistributionType.source:
@@ -107,20 +99,15 @@ class _AdminDistributionChartState extends State<AdminDistributionChart> {
         const Gap(20),
 
         ////////////////////////////////////////////////////////////
-        /// DARK CONTAINER (UNCHANGED DESIGN)
+        /// CONTAINER
         ////////////////////////////////////////////////////////////
         Container(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
-
             gradient: const LinearGradient(
               colors: [Color(0xff020617), Color(0xff0F172A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
             ),
-
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(.45),
@@ -129,13 +116,8 @@ class _AdminDistributionChartState extends State<AdminDistributionChart> {
               ),
             ],
           ),
-
-          ////////////////////////////////////////////////////////////
-          /// DONUT CHART (UNCHANGED)
-          ////////////////////////////////////////////////////////////
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 350),
-
             child: _DistributionDonutChart(
               key: ValueKey(selected),
               data: chartData,
@@ -146,8 +128,6 @@ class _AdminDistributionChartState extends State<AdminDistributionChart> {
     );
   }
 
-  ////////////////////////////////////////////////////////////
-  /// DATA MAPPER (UNCHANGED)
   ////////////////////////////////////////////////////////////
 
   List<DonutChartDataItem> _getChartData() {
@@ -165,7 +145,7 @@ class _AdminDistributionChartState extends State<AdminDistributionChart> {
 }
 
 ////////////////////////////////////////////////////////////
-/// DONUT CHART (UNCHANGED FULL)
+/// DONUT CHART
 ////////////////////////////////////////////////////////////
 
 class _DistributionDonutChart extends StatefulWidget {
@@ -200,6 +180,16 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
   }
 
   @override
+  void didUpdateWidget(covariant _DistributionDonutChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    touchedIndex = -1;
+
+    controller.reset();
+    controller.forward();
+  }
+
+  @override
   void dispose() {
     controller.dispose();
     super.dispose();
@@ -210,7 +200,12 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
   @override
   Widget build(BuildContext context) {
     if (widget.data.isEmpty) {
-      return const SizedBox(height: 240);
+      return const SizedBox(
+        height: 240,
+        child: Center(
+          child: Text("No data", style: TextStyle(color: Colors.white54)),
+        ),
+      );
     }
 
     final total = widget.data.fold(0, (sum, e) => sum + e.value);
@@ -225,8 +220,13 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
         ? "Total"
         : widget.data[touchedIndex].label;
 
+    ////////////////////////////////////////////////////////////
+
     return Column(
       children: [
+        ////////////////////////////////////////////////////////////
+        /// CHART
+        ////////////////////////////////////////////////////////////
         SizedBox(
           height: 240,
           child: AnimatedBuilder(
@@ -256,7 +256,9 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
                       ),
                       sections: List.generate(widget.data.length, (index) {
                         final item = widget.data[index];
+
                         final color = colors[index];
+
                         final isTouched = index == touchedIndex;
 
                         return PieChartSectionData(
@@ -275,23 +277,36 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
                     ),
                   ),
 
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        centerValue.toString(),
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                  ////////////////////////////////////////////////////////////
+                  /// CENTER TEXT WITH ELLIPSIS
+                  ////////////////////////////////////////////////////////////
+                  SizedBox(
+                    width: 140,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          centerValue.toString(),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      const Gap(4),
-                      Text(
-                        centerLabel,
-                        style: TextStyle(color: Colors.white.withOpacity(.6)),
-                      ),
-                    ],
+
+                        const Gap(4),
+
+                        Tooltip(
+                          message: centerLabel,
+                          child: Text(
+                            centerLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               );
@@ -301,13 +316,18 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
 
         const Gap(16),
 
+        ////////////////////////////////////////////////////////////
+        /// LEGEND WITH ELLIPSIS (FINAL FIX)
+        ////////////////////////////////////////////////////////////
         Wrap(
-          spacing: 20,
+          spacing: 16,
           runSpacing: 12,
           alignment: WrapAlignment.center,
           children: List.generate(widget.data.length, (index) {
             final item = widget.data[index];
+
             final percent = (item.value / total * 100).toStringAsFixed(1);
+
             final isActive = touchedIndex == -1 || touchedIndex == index;
 
             return GestureDetector(
@@ -319,31 +339,49 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
                 opacity: isActive ? 1 : .4,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: colors[index],
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 160),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors[index],
+                        ),
                       ),
-                    ),
-                    const Gap(8),
-                    Text(
-                      item.label,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
+
+                      const Gap(8),
+
+                      Expanded(
+                        child: Tooltip(
+                          message: item.label,
+                          child: Text(
+                            item.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            softWrap: false,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const Gap(6),
-                    Text(
-                      "${item.value} ($percent%)",
-                      style: TextStyle(color: Colors.white.withOpacity(.6)),
-                    ),
-                  ],
+
+                      const Gap(6),
+
+                      Text(
+                        "${item.value} ($percent%)",
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -355,16 +393,14 @@ class _DistributionDonutChartState extends State<_DistributionDonutChart>
 }
 
 ////////////////////////////////////////////////////////////
-/// DISTRIBUTION MAPPER (UNCHANGED)
+/// MAPPER
 ////////////////////////////////////////////////////////////
 
 class DistributionMapper {
   static List<DonutChartDataItem> fromSource(
     DashboardDistribution distribution,
   ) {
-    final map = distribution.applicationsBySource;
-
-    return map.entries
+    return distribution.applicationsBySource.entries
         .map(
           (e) => DonutChartDataItem(label: _capitalize(e.key), value: e.value),
         )

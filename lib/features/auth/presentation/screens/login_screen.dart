@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../providers/auth_state_provider.dart';
 import '../providers/current_user_provider.dart';
 import 'signup_screen.dart';
+import 'partner_signup_screen.dart';
 import 'package:gap/gap.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -76,7 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [theme.colorScheme.primary.withOpacity(.05), Colors.white],
+            colors: [theme.colorScheme.primary.withOpacity(.06), Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -87,22 +88,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const _Header(),
 
                   const Gap(32),
 
-                  /// Premium Card
                   Container(
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(.05),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withOpacity(.06),
+                          blurRadius: 30,
+                          offset: const Offset(0, 12),
                         ),
                       ],
                     ),
@@ -111,21 +110,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Form(
                         key: _formKey,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             _EmailField(controller: emailController),
 
-                            const Gap(16),
+                            const Gap(18),
 
                             _PasswordField(controller: passwordController),
 
-                            const Gap(24),
+                            const Gap(26),
 
                             _LoginButton(loading: loading, onPressed: _login),
 
+                            const Gap(20),
+
+                            Row(
+                              children: [
+                                Expanded(child: Divider()),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  child: Text(
+                                    "OR",
+                                    style: TextStyle(color: Colors.grey[500]),
+                                  ),
+                                ),
+                                Expanded(child: Divider()),
+                              ],
+                            ),
+
                             const Gap(16),
 
-                            _SignupLink(loading: loading),
+                            _SignupButton(loading: loading),
                           ],
                         ),
                       ),
@@ -141,7 +157,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-/// HEADER WITH LOGO
 class _Header extends StatelessWidget {
   const _Header();
 
@@ -149,43 +164,53 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Center(
-      child: Column(
-        children: [
-          /// Company Logo
-          Container(
-            height: 180,
-            width: 180,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(.08),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Image.asset("assets/logo.png", fit: BoxFit.contain),
+    return Column(
+      children: [
+        Container(
+          height: 170,
+          width: 170,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(.08),
+            borderRadius: BorderRadius.circular(28),
           ),
+          child: Image.asset("assets/logo.png"),
+        ),
 
-          const Gap(24),
+        const Gap(24),
 
-          Text(
-            "Welcome back",
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -.5,
-            ),
+        Text(
+          "Welcome Back",
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
           ),
+        ),
 
-          const Gap(8),
+        const Gap(8),
 
-          Text(
-            "Sign in to continue to your dashboard",
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-              fontSize: 15,
-            ),
-          ),
-        ],
-      ),
+        Text("Login to continue", style: TextStyle(color: Colors.grey[600])),
+      ],
+    );
+  }
+}
+
+class _SignupButton extends StatelessWidget {
+  final bool loading;
+
+  const _SignupButton({required this.loading});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: loading
+          ? null
+          : () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SignupScreen()),
+              );
+            },
+      child: const Text("Create Account"),
     );
   }
 }
@@ -306,42 +331,6 @@ class _LoginButton extends StatelessWidget {
                 "Sign in",
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
-      ),
-    );
-  }
-}
-
-/// SIGNUP LINK
-class _SignupLink extends StatelessWidget {
-  final bool loading;
-
-  const _SignupLink({required this.loading});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: loading
-          ? null
-          : () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SignupScreen()),
-              );
-            },
-      child: RichText(
-        text: TextSpan(
-          text: "Don't have an account? ",
-          style: TextStyle(color: Colors.grey[600]),
-          children: [
-            TextSpan(
-              text: "Create account",
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

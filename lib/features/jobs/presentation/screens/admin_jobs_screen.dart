@@ -32,6 +32,8 @@ class AdminJobsScreen extends ConsumerWidget {
             onRefresh: () => ref.read(jobsProvider.notifier).refresh(),
 
             child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+
               itemCount: jobs.length,
 
               itemBuilder: (context, index) {
@@ -51,7 +53,7 @@ class AdminJobsScreen extends ConsumerWidget {
 }
 
 ///////////////////////////////////////////////////////////////
-/// JOB CARD
+/// PREMIUM JOB CARD
 ///////////////////////////////////////////////////////////////
 
 class _AdminJobCard extends StatelessWidget {
@@ -60,15 +62,17 @@ class _AdminJobCard extends StatelessWidget {
   const _AdminJobCard({required this.job});
 
   Color statusColor(String? status) {
-    if (status == null) return Colors.grey;
+    if (status == null) return const Color(0xFF64748B);
 
     switch (status.toLowerCase()) {
       case "open":
-        return Colors.green;
+        return const Color(0xFF059669); // muted emerald
+
       case "closed":
-        return Colors.red;
+        return const Color(0xFFDC2626); // muted red
+
       default:
-        return Colors.orange;
+        return const Color(0xFFD97706); // muted amber
     }
   }
 
@@ -77,123 +81,207 @@ class _AdminJobCard extends StatelessWidget {
     final theme = Theme.of(context);
     final color = statusColor(job.status);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
 
-      elevation: 0,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: Colors.grey.withOpacity(.15)),
+        gradient: LinearGradient(
+          colors: [theme.colorScheme.surface, color.withOpacity(.035)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+
+        border: Border.all(color: color.withOpacity(.18)),
+
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
 
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
+        child: Row(
           children: [
-            /// Title + Status
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    job.title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+            ////////////////////////////////////////////////////////////
+            /// LEFT ACCENT BAR
+            ////////////////////////////////////////////////////////////
+            Container(
+              width: 5,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, color.withOpacity(.6)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+
+            ////////////////////////////////////////////////////////////
+            /// CONTENT
+            ////////////////////////////////////////////////////////////
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    ////////////////////////////////////////////////////////////
+                    /// TITLE + STATUS
+                    ////////////////////////////////////////////////////////////
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            job.title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -.2,
+                            ),
+                          ),
+                        ),
+
+                        _StatusBadge(
+                          status: job.status ?? "UNKNOWN",
+                          color: color,
+                        ),
+                      ],
                     ),
-                  ),
+
+                    const Gap(12),
+
+                    ////////////////////////////////////////////////////////////
+                    /// COMPANY
+                    ////////////////////////////////////////////////////////////
+                    _MutedRow(
+                      icon: Icons.business_outlined,
+                      text: job.companyName ?? "",
+                    ),
+
+                    const Gap(6),
+
+                    ////////////////////////////////////////////////////////////
+                    /// LOCATION
+                    ////////////////////////////////////////////////////////////
+                    _MutedRow(
+                      icon: Icons.location_on_outlined,
+                      text: job.location ?? "",
+                    ),
+
+                    const Gap(14),
+
+                    ////////////////////////////////////////////////////////////
+                    /// PREMIUM CHIPS
+                    ////////////////////////////////////////////////////////////
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+
+                      children: [
+                        if (job.openings != null)
+                          _PremiumChip(
+                            icon: Icons.groups_outlined,
+                            text: "${job.openings} openings",
+                            color: const Color(0xFF2563EB),
+                          ),
+
+                        if (job.minExperience != null &&
+                            job.maxExperience != null)
+                          _PremiumChip(
+                            icon: Icons.work_outline,
+                            text:
+                                "${job.minExperience}-${job.maxExperience} yrs",
+                            color: const Color(0xFF7C3AED),
+                          ),
+
+                        if (job.salaryMin != null && job.salaryMax != null)
+                          _PremiumChip(
+                            icon: Icons.currency_rupee,
+                            text: "${job.salaryMin}-${job.salaryMax}",
+                            color: const Color(0xFF059669),
+                          ),
+                      ],
+                    ),
+
+                    const Gap(14),
+
+                    ////////////////////////////////////////////////////////////
+                    /// APPLICATIONS
+                    ////////////////////////////////////////////////////////////
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 18,
+                          color: color.withOpacity(.85),
+                        ),
+
+                        const Gap(6),
+
+                        Text(
+                          "${job.applicationsCount ?? 0} Applications",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: color.withOpacity(.9),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const Gap(8),
+
+                    ////////////////////////////////////////////////////////////
+                    /// CREATED DATE
+                    ////////////////////////////////////////////////////////////
+                    Text(
+                      "Created ${job.createdAt.toLocal().toString().split('.')[0]}",
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
+                  ],
                 ),
-
-                _StatusBadge(status: job.status ?? "UNKNOWN", color: color),
-              ],
-            ),
-
-            const Gap(10),
-
-            /// Company
-            Row(
-              children: [
-                Icon(
-                  Icons.business_outlined,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-
-                const Gap(6),
-
-                Text(job.companyName ?? ""),
-              ],
-            ),
-
-            const Gap(6),
-
-            /// Location
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on_outlined,
-                  size: 16,
-                  color: Colors.grey[600],
-                ),
-
-                const Gap(6),
-
-                Text(job.location ?? ""),
-              ],
-            ),
-
-            const Gap(12),
-
-            /// Chips
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (job.openings != null)
-                  _InfoChip(label: "Openings", value: "${job.openings}"),
-
-                if (job.minExperience != null && job.maxExperience != null)
-                  _InfoChip(
-                    label: "Experience",
-                    value: "${job.minExperience}-${job.maxExperience} yrs",
-                  ),
-
-                if (job.salaryMin != null && job.salaryMax != null)
-                  _InfoChip(
-                    label: "Salary",
-                    value: "${job.salaryMin}-${job.salaryMax}",
-                  ),
-              ],
-            ),
-
-            const Gap(12),
-
-            /// Applications
-            Row(
-              children: [
-                Icon(Icons.people_outline, size: 18, color: Colors.grey[700]),
-
-                const Gap(6),
-
-                Text(
-                  "${job.applicationsCount ?? 0} Applications",
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-
-            const Gap(8),
-
-            /// Created date
-            Text(
-              "Created ${job.createdAt.toLocal().toString().split('.')[0]}",
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+///////////////////////////////////////////////////////////////
+/// MUTED ROW
+///////////////////////////////////////////////////////////////
+
+class _MutedRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _MutedRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey[600]),
+
+        const Gap(6),
+
+        Text(
+          text,
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -211,19 +299,19 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
 
       decoration: BoxDecoration(
-        color: color.withOpacity(.1),
+        color: color.withOpacity(.12),
         borderRadius: BorderRadius.circular(20),
       ),
 
       child: Text(
-        status,
+        status.toUpperCase(),
         style: TextStyle(
           color: color,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          fontSize: 11,
         ),
       ),
     );
@@ -231,14 +319,19 @@ class _StatusBadge extends StatelessWidget {
 }
 
 ///////////////////////////////////////////////////////////////
-/// INFO CHIP
+/// PREMIUM CHIP
 ///////////////////////////////////////////////////////////////
 
-class _InfoChip extends StatelessWidget {
-  final String label;
-  final String value;
+class _PremiumChip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
 
-  const _InfoChip({required this.label, required this.value});
+  const _PremiumChip({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -246,11 +339,30 @@ class _InfoChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
 
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(.08),
-        borderRadius: BorderRadius.circular(8),
+        color: color.withOpacity(.08),
+        borderRadius: BorderRadius.circular(20),
+
+        border: Border.all(color: color.withOpacity(.18)),
       ),
 
-      child: Text("$label: $value", style: const TextStyle(fontSize: 12)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+
+        children: [
+          Icon(icon, size: 14, color: color),
+
+          const Gap(5),
+
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color.withOpacity(.9),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

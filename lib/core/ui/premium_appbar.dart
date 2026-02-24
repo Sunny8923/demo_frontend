@@ -16,11 +16,8 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(title),
 
       actions: actions,
-
-      backgroundColor: scheme.surface,
-
-      foregroundColor: scheme.onSurface,
-
+      backgroundColor: scheme.primary, // ✅ main brand color
+      foregroundColor: scheme.onPrimary,
       elevation: 0,
     );
   }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 
+import 'login_screen.dart';
+import 'signup_screen.dart';
 import '../providers/auth_provider.dart';
 
 class PartnerSignupScreen extends ConsumerStatefulWidget {
@@ -51,9 +53,9 @@ class _PartnerSignupScreenState extends ConsumerState<PartnerSignupScreen> {
     super.dispose();
   }
 
-  ///////////////////////////////////////////////////////////////
-  /// SIGNUP (UNCHANGED)
-  ///////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
+  /// SIGNUP LOGIC (UNCHANGED)
+  /////////////////////////////////////////////////////////////////
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
@@ -91,7 +93,12 @@ class _PartnerSignupScreenState extends ConsumerState<PartnerSignupScreen> {
       ),
     );
 
-    Navigator.pop(context);
+    /// RESET STACK → LOGIN SCREEN
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   void _showError(String message) {
@@ -100,9 +107,9 @@ class _PartnerSignupScreenState extends ConsumerState<PartnerSignupScreen> {
     );
   }
 
-  ///////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
   /// UI
-  ///////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
@@ -113,19 +120,24 @@ class _PartnerSignupScreenState extends ConsumerState<PartnerSignupScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [theme.colorScheme.primary.withOpacity(.05), Colors.white],
+            colors: [theme.colorScheme.primary.withOpacity(.06), Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
+
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
+
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: const BoxConstraints(maxWidth: 520),
+
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  /////////////////////////////////////////////////////////////////
+                  /// HEADER
+                  /////////////////////////////////////////////////////////////////
                   const _Header()
                       .animate()
                       .fadeIn(duration: 400.ms)
@@ -133,102 +145,113 @@ class _PartnerSignupScreenState extends ConsumerState<PartnerSignupScreen> {
 
                   const Gap(32),
 
-                  /// PREMIUM FORM CARD
+                  /////////////////////////////////////////////////////////////////
+                  /// FORM CARD
+                  /////////////////////////////////////////////////////////////////
                   Container(
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(.05),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withOpacity(.06),
+                          blurRadius: 30,
+                          offset: const Offset(0, 12),
                         ),
                       ],
                     ),
+
                     child: Padding(
                       padding: const EdgeInsets.all(28),
+
                       child: Form(
                         key: _formKey,
+
                         child: Column(
                           children: [
-                            _StyledField(
+                            _sectionTitle("Basic Info"),
+
+                            _Field(
                               controller: nameController,
                               label: "Full Name",
                               icon: Icons.person_outline,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
-                            _StyledField(
+                            _Field(
                               controller: emailController,
-                              label: "Email address",
+                              label: "Email",
                               icon: Icons.email_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
                             _PasswordField(controller: passwordController),
 
-                            const Gap(18),
+                            const Gap(24),
 
-                            _StyledField(
+                            _sectionTitle("Business Info"),
+
+                            _Field(
                               controller: businessController,
                               label: "Business Name",
                               icon: Icons.business_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
-                            _StyledField(
+                            _Field(
                               controller: ownerController,
                               label: "Owner Name",
                               icon: Icons.badge_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
-                            _StyledField(
+                            _Field(
                               controller: establishmentController,
-                              label: "Establishment Date (YYYY-MM-DD)",
+                              label: "Establishment Date",
                               icon: Icons.calendar_today_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
-                            _StyledField(
+                            _Field(
                               controller: gstController,
                               label: "GST Number",
                               icon: Icons.receipt_long_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
-                            _StyledField(
+                            _Field(
                               controller: panController,
                               label: "PAN Number",
                               icon: Icons.credit_card_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
-                            _StyledField(
+                            _Field(
                               controller: addressController,
                               label: "Business Address",
                               icon: Icons.location_on_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(24),
 
-                            _StyledField(
+                            _sectionTitle("Contact"),
+
+                            _Field(
                               controller: phoneController,
                               label: "Phone Number",
                               icon: Icons.phone_outlined,
                             ),
 
-                            const Gap(18),
+                            const Gap(16),
 
-                            _StyledField(
+                            _Field(
                               controller: officialEmailController,
                               label: "Official Email",
                               icon: Icons.alternate_email_outlined,
@@ -241,15 +264,58 @@ class _PartnerSignupScreenState extends ConsumerState<PartnerSignupScreen> {
                               onChanged: (v) =>
                                   setState(() => msmeRegistered = v ?? false),
                               title: const Text("MSME Registered"),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
                               controlAffinity: ListTileControlAffinity.leading,
                             ),
 
                             const Gap(24),
 
-                            _SignupButton(loading: loading, onPressed: _signup),
+                            _PrimaryButton(
+                              loading: loading,
+                              text: "Create Partner Account",
+                              onPressed: _signup,
+                            ),
+
+                            const Gap(16),
+
+                            Row(
+                              children: [
+                                Expanded(child: Divider()),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: Text("OR"),
+                                ),
+                                Expanded(child: Divider()),
+                              ],
+                            ),
+
+                            const Gap(12),
+
+                            _SecondaryButton(
+                              text: "Normal Signup",
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const SignupScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            _SecondaryButton(
+                              text: "Back to Login",
+                              onPressed: () {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
+                                  ),
+                                  (route) => false,
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -263,10 +329,27 @@ class _PartnerSignupScreenState extends ConsumerState<PartnerSignupScreen> {
       ),
     );
   }
+
+  /////////////////////////////////////////////////////////////////
+  /// HELPERS
+  /////////////////////////////////////////////////////////////////
+
+  Widget _sectionTitle(String title) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10, top: 8),
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
 }
 
 ///////////////////////////////////////////////////////////////
-/// HEADER WITH LOGO
+/// HEADER
 ///////////////////////////////////////////////////////////////
 
 class _Header extends StatelessWidget {
@@ -276,54 +359,49 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Center(
-      child: Column(
-        children: [
-          Container(
-            height: 180,
-            width: 180,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(.08),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Image.asset("assets/logo.png", fit: BoxFit.contain),
+    return Column(
+      children: [
+        Container(
+          height: 150,
+          width: 150,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(.08),
+            borderRadius: BorderRadius.circular(28),
           ),
+          child: Image.asset("assets/logo.png"),
+        ),
 
-          const Gap(24),
+        const Gap(24),
 
-          Text(
-            "Become a Partner",
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
+        Text(
+          "Partner Signup",
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
           ),
+        ),
 
-          const Gap(8),
+        const Gap(8),
 
-          Text(
-            "Create your partner account to submit candidates",
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
+        Text(
+          "Create your partner account",
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+      ],
     );
   }
 }
 
 ///////////////////////////////////////////////////////////////
-/// MODERN TEXT FIELD
+/// FIELD
 ///////////////////////////////////////////////////////////////
 
-class _StyledField extends StatelessWidget {
+class _Field extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
 
-  const _StyledField({
+  const _Field({
     required this.controller,
     required this.label,
     required this.icon,
@@ -333,15 +411,13 @@ class _StyledField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
       ),
+
       validator: (v) => v == null || v.isEmpty ? "$label required" : null,
     );
   }
@@ -353,6 +429,7 @@ class _StyledField extends StatelessWidget {
 
 class _PasswordField extends StatefulWidget {
   final TextEditingController controller;
+
   const _PasswordField({required this.controller});
 
   @override
@@ -371,10 +448,10 @@ class _PasswordFieldState extends State<_PasswordField> {
         labelText: "Password",
         prefixIcon: const Icon(Icons.lock_outline),
         suffixIcon: IconButton(
-          icon: Icon(
-            obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-          ),
-          onPressed: () => setState(() => obscure = !obscure),
+          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
+          onPressed: () {
+            setState(() => obscure = !obscure);
+          },
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
@@ -384,35 +461,43 @@ class _PasswordFieldState extends State<_PasswordField> {
 }
 
 ///////////////////////////////////////////////////////////////
-/// BUTTON
+/// BUTTONS
 ///////////////////////////////////////////////////////////////
 
-class _SignupButton extends StatelessWidget {
+class _PrimaryButton extends StatelessWidget {
   final bool loading;
+  final String text;
   final VoidCallback onPressed;
 
-  const _SignupButton({required this.loading, required this.onPressed});
+  const _PrimaryButton({
+    required this.loading,
+    required this.text,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 52,
       width: double.infinity,
+      height: 52,
       child: ElevatedButton(
         onPressed: loading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          elevation: 0,
-        ),
         child: loading
             ? const CircularProgressIndicator(color: Colors.white)
-            : const Text(
-                "Create Partner Account",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
+            : Text(text),
       ),
     );
+  }
+}
+
+class _SecondaryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+
+  const _SecondaryButton({required this.text, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(onPressed: onPressed, child: Text(text));
   }
 }

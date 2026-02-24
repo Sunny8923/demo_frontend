@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/features/auth/presentation/screens/partner_signup_screen.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 
+import 'login_screen.dart';
+import 'partner_signup_screen.dart';
 import '../providers/auth_provider.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -27,6 +28,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     passwordController.dispose();
     super.dispose();
   }
+
+  /////////////////////////////////////////////////////////////////
+  /// SIGNUP LOGIC (UNCHANGED)
+  /////////////////////////////////////////////////////////////////
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
@@ -55,7 +60,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       ),
     );
 
-    Navigator.pop(context);
+    /// RESET STACK → LOGIN SCREEN
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   void _showError(String message) {
@@ -63,6 +73,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
+
+  /////////////////////////////////////////////////////////////////
+  /// UI
+  /////////////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
@@ -73,51 +87,68 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [theme.colorScheme.primary.withOpacity(.05), Colors.white],
+            colors: [theme.colorScheme.primary.withOpacity(.06), Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
+
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
+
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
+
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  /////////////////////////////////////////////////////////////////
                   /// HEADER
-                  const _SignupHeader()
+                  /////////////////////////////////////////////////////////////////
+                  const _Header()
                       .animate()
                       .fadeIn(duration: 400.ms)
                       .slideY(begin: .2),
 
                   const Gap(32),
 
-                  /// PREMIUM FORM CARD
+                  /////////////////////////////////////////////////////////////////
+                  /// PREMIUM CARD
+                  /////////////////////////////////////////////////////////////////
                   Container(
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(.05),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withOpacity(.06),
+                          blurRadius: 30,
+                          offset: const Offset(0, 12),
                         ),
                       ],
                     ),
+
                     child: Padding(
                       padding: const EdgeInsets.all(28),
+
                       child: Form(
                         key: _formKey,
+
                         child: Column(
                           children: [
-                            _NameField(controller: nameController),
+                            _Field(
+                              controller: nameController,
+                              label: "Full Name",
+                              icon: Icons.person_outline,
+                            ),
 
                             const Gap(18),
 
-                            _EmailField(controller: emailController),
+                            _Field(
+                              controller: emailController,
+                              label: "Email Address",
+                              icon: Icons.email_outlined,
+                            ),
 
                             const Gap(18),
 
@@ -125,16 +156,59 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
                             const Gap(26),
 
-                            _SignupButton(loading: loading, onPressed: _signup),
+                            _PrimaryButton(
+                              loading: loading,
+                              text: "Create Account",
+                              onPressed: _signup,
+                            ),
+
+                            const Gap(16),
+
+                            Row(
+                              children: [
+                                Expanded(child: Divider()),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: Text("OR"),
+                                ),
+                                Expanded(child: Divider()),
+                              ],
+                            ),
+
+                            const Gap(12),
+
+                            _SecondaryButton(
+                              text: "Partner Signup",
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const PartnerSignupScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            const Gap(8),
+
+                            _SecondaryButton(
+                              text: "Back to Login",
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
+                                  ),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
                     ),
                   ).animate().fadeIn(delay: 150.ms).slideY(begin: .15),
-
-                  const Gap(32),
-
-                  const _PartnerCTA().animate().fadeIn(delay: 300.ms),
                 ],
               ),
             ),
@@ -146,110 +220,76 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 }
 
 ///////////////////////////////////////////////////////////////
-/// HEADER WITH LOGO
+/// HEADER
 ///////////////////////////////////////////////////////////////
 
-class _SignupHeader extends StatelessWidget {
-  const _SignupHeader();
+class _Header extends StatelessWidget {
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Center(
-      child: Column(
-        children: [
-          /// COMPANY LOGO
-          Container(
-            height: 180,
-            width: 180,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(.08),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Image.asset("assets/logo.png", fit: BoxFit.contain),
+    return Column(
+      children: [
+        Container(
+          height: 160,
+          width: 160,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(.08),
+            borderRadius: BorderRadius.circular(28),
           ),
+          child: Image.asset("assets/logo.png"),
+        ),
 
-          const Gap(24),
+        const Gap(24),
 
-          Text(
-            "Create Account",
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -.5,
-            ),
+        Text(
+          "Create Account",
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w800,
           ),
+        ),
 
-          const Gap(8),
+        const Gap(8),
 
-          Text(
-            "Join and start applying for jobs",
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-              fontSize: 15,
-            ),
-          ),
-        ],
-      ),
+        Text(
+          "Join and start your journey",
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+      ],
     );
   }
 }
 
 ///////////////////////////////////////////////////////////////
-/// NAME FIELD
+/// FIELD
 ///////////////////////////////////////////////////////////////
 
-class _NameField extends StatelessWidget {
+class _Field extends StatelessWidget {
   final TextEditingController controller;
+  final String label;
+  final IconData icon;
 
-  const _NameField({required this.controller});
+  const _Field({
+    required this.controller,
+    required this.label,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      textInputAction: TextInputAction.next,
+
       decoration: InputDecoration(
-        labelText: "Full name",
-        prefixIcon: const Icon(Icons.person_outline),
+        labelText: label,
+        prefixIcon: Icon(icon),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
       ),
-      validator: (v) => v == null || v.isEmpty ? "Name required" : null,
-    );
-  }
-}
 
-///////////////////////////////////////////////////////////////
-/// EMAIL FIELD
-///////////////////////////////////////////////////////////////
-
-class _EmailField extends StatelessWidget {
-  final TextEditingController controller;
-
-  const _EmailField({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      textInputAction: TextInputAction.next,
-      keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-        labelText: "Email address",
-        prefixIcon: const Icon(Icons.email_outlined),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-      ),
-      validator: (v) => v == null || v.isEmpty ? "Email required" : null,
+      validator: (v) => v == null || v.isEmpty ? "$label required" : null,
     );
   }
 }
@@ -275,100 +315,67 @@ class _PasswordFieldState extends State<_PasswordField> {
     return TextFormField(
       controller: widget.controller,
       obscureText: obscure,
+
       decoration: InputDecoration(
         labelText: "Password",
+
         prefixIcon: const Icon(Icons.lock_outline),
+
         suffixIcon: IconButton(
-          icon: Icon(
-            obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-          ),
+          icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
           onPressed: () {
             setState(() => obscure = !obscure);
           },
         ),
+
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
       ),
+
       validator: (v) => v == null || v.isEmpty ? "Password required" : null,
     );
   }
 }
 
 ///////////////////////////////////////////////////////////////
-/// SIGNUP BUTTON
+/// BUTTONS
 ///////////////////////////////////////////////////////////////
 
-class _SignupButton extends StatelessWidget {
+class _PrimaryButton extends StatelessWidget {
   final bool loading;
+  final String text;
   final VoidCallback onPressed;
 
-  const _SignupButton({required this.loading, required this.onPressed});
+  const _PrimaryButton({
+    required this.loading,
+    required this.text,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 52,
+
       child: ElevatedButton(
         onPressed: loading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          elevation: 0,
-        ),
+
         child: loading
-            ? const SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Colors.white,
-                ),
-              )
-            : const Text(
-                "Create Account",
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-              ),
+            ? const CircularProgressIndicator(color: Colors.white)
+            : Text(text),
       ),
     );
   }
 }
 
-///////////////////////////////////////////////////////////////
-/// PARTNER CTA
-///////////////////////////////////////////////////////////////
+class _SecondaryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
 
-class _PartnerCTA extends StatelessWidget {
-  const _PartnerCTA();
+  const _SecondaryButton({required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Text(
-            "Want to hire candidates?",
-            style: TextStyle(color: Colors.grey[600]),
-          ),
-          const Gap(6),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PartnerSignupScreen()),
-              );
-            },
-            child: const Text(
-              "Create Partner Account",
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
+    return TextButton(onPressed: onPressed, child: Text(text));
   }
 }
