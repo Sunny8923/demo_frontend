@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/application/presentation/screens/my_application_screeen.dart';
+import 'package:frontend/features/jobs/presentation/screens/jobs_list_screen.dart';
 import 'package:gap/gap.dart';
 
 class RecruiterDashboardQuickActions extends StatelessWidget {
@@ -31,8 +33,28 @@ class RecruiterDashboardQuickActions extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
 
             children: [
-              _action(Icons.person_add, "Add Candidate", Colors.blue),
-              _action(Icons.assignment, "Applications", Colors.green),
+              _action(
+                context,
+                "Browse Jobs",
+                Icons.work_outline,
+                Colors.blue,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const JobsListScreen()),
+                ),
+              ),
+              _action(
+                context,
+                "My Applications",
+                Icons.assignment_outlined,
+                Colors.green,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MyApplicationsScreen(),
+                  ),
+                ),
+              ),
             ],
           ),
         ],
@@ -40,14 +62,24 @@ class RecruiterDashboardQuickActions extends StatelessWidget {
     );
   }
 
-  Widget _action(IconData icon, String label, Color color) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: color),
-        const Gap(8),
-        Text(label),
-      ],
+  Widget _action(
+    BuildContext context,
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color),
+          const Gap(8),
+          Text(label),
+        ],
+      ),
     );
   }
 }

@@ -19,10 +19,13 @@ import '../widgets/dashboard_quick_actions.dart';
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
+  Future<void> _refresh(WidgetRef ref) async {
+    await ref.read(adminDashboardProvider.notifier).refresh();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardState = ref.watch(adminDashboardProvider);
-
     final currentUser = ref.watch(currentUserProvider).value;
 
     final theme = Theme.of(context);
@@ -31,175 +34,141 @@ class AdminDashboardScreen extends ConsumerWidget {
     return AppScaffold(
       title: "Admin Dashboard",
 
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(adminDashboardProvider.notifier).refresh();
-        },
+      body: dashboardState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
 
-        child: dashboardState.when(
-          loading: () => const _DashboardLoading(),
+        error: (error, stack) => _DashboardError(
+          error: error.toString(),
+          onRetry: () => _refresh(ref),
+        ),
 
-          error: (error, stack) => _DashboardError(
-            error: error.toString(),
-            onRetry: () => ref.read(adminDashboardProvider.notifier).refresh(),
-          ),
+        data: (dashboard) {
+          return DefaultTabController(
+            length: 4,
 
-          data: (dashboard) {
-            return DefaultTabController(
-              length: 4,
+            child: NestedScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
 
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              ////////////////////////////////////////////////////////////
+              /// HEADER
+              ////////////////////////////////////////////////////////////
+              headerSliverBuilder: (context, innerBoxScrolled) {
+                return [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: DashboardHeader(
+                        adminName: currentUser?.name ?? "Admin",
+                      ).animate().fadeIn(duration: 400.ms).slideY(begin: .2),
+                    ),
+                  ),
 
-                children: [
-                  ////////////////////////////////////////////////////////////
-                  /// SCROLLABLE TOP SECTION
-                  ////////////////////////////////////////////////////////////
-                  Expanded(
-                    child: NestedScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: DashboardSummaryCards(
+                        summary: dashboard.summary,
+                        summaryChange: dashboard.summaryChange,
+                      ).animate().fadeIn(delay: 100.ms).slideY(begin: .1),
+                    ),
+                  ),
 
-                      headerSliverBuilder: (context, innerBoxScrolled) {
-                        return [
-                          ////////////////////////////////////////////////////
-                          /// HEADER
-                          ////////////////////////////////////////////////////
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-
-                              child:
-                                  DashboardHeader(
-                                        adminName: currentUser?.name ?? "Admin",
-                                      )
-                                      .animate()
-                                      .fadeIn(duration: 400.ms)
-                                      .slideY(begin: .2),
-                            ),
-                          ),
-
-                          ////////////////////////////////////////////////////
-                          /// SUMMARY CARDS
-                          ////////////////////////////////////////////////////
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-
-                              child:
-                                  DashboardSummaryCards(
-                                        summary: dashboard.summary,
-                                        summaryChange: dashboard.summaryChange,
-                                      )
-                                      .animate()
-                                      .fadeIn(delay: 100.ms)
-                                      .slideY(begin: .1),
-                            ),
-                          ),
-
-                          ////////////////////////////////////////////////////
-                          /// PREMIUM TAB BAR
-                          ////////////////////////////////////////////////////
-                          SliverPersistentHeader(
-                            pinned: true,
-
-                            delegate: _PremiumTabBarDelegate(
-                              TabBar(
-                                isScrollable: true,
-
-                                labelStyle: theme.textTheme.labelLarge,
-
-                                indicatorColor: scheme.primary,
-
-                                indicatorWeight: 2.5,
-
-                                labelColor: scheme.primary,
-
-                                unselectedLabelColor: scheme.onSurfaceVariant,
-
-                                tabs: const [
-                                  Tab(text: "Actions"),
-                                  Tab(text: "Overview"),
-                                  Tab(text: "Analytics"),
-                                  Tab(text: "Leaderboards"),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ];
-                      },
-
-                      ////////////////////////////////////////////////////////////
-                      /// TAB CONTENT
-                      ////////////////////////////////////////////////////////////
-                      body: TabBarView(
-                        children: [
-                          ////////////////////////////////////////////////////
-                          /// ACTIONS TAB
-                          ////////////////////////////////////////////////////
-                          SingleChildScrollView(
-                            padding: const EdgeInsets.all(16),
-
-                            child: DashboardQuickActions()
-                                .animate()
-                                .fadeIn()
-                                .slideY(begin: .1),
-                          ),
-                          ////////////////////////////////////////////////////
-                          /// OVERVIEW TAB
-                          ////////////////////////////////////////////////////
-                          SingleChildScrollView(
-                            padding: const EdgeInsets.all(16),
-
-                            child: DashboardPipelineWidget(
-                              pipeline: dashboard.pipeline,
-                            ).animate().fadeIn().slideY(begin: .1),
-                          ),
-
-                          ////////////////////////////////////////////////////
-                          /// ANALYTICS TAB
-                          ////////////////////////////////////////////////////
-                          SingleChildScrollView(
-                            padding: const EdgeInsets.all(16),
-
-                            child: Column(
-                              children: [
-                                DashboardTrendsChart(trends: dashboard.trends),
-
-                                const Gap(24),
-
-                                AdminDistributionChart(
-                                  distribution: dashboard.distribution,
-                                ),
-                              ],
-                            ).animate().fadeIn().slideY(begin: .1),
-                          ),
-
-                          ////////////////////////////////////////////////////
-                          /// LEADERBOARDS TAB
-                          ////////////////////////////////////////////////////
-                          SingleChildScrollView(
-                            padding: const EdgeInsets.all(16),
-
-                            child: DashboardLeaderboardsWidget(
-                              leaderboards: dashboard.leaderboards,
-                            ).animate().fadeIn().slideY(begin: .1),
-                          ),
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _PremiumTabBarDelegate(
+                      TabBar(
+                        isScrollable: true,
+                        labelStyle: theme.textTheme.labelLarge,
+                        indicatorColor: scheme.primary,
+                        indicatorWeight: 2.5,
+                        labelColor: scheme.primary,
+                        unselectedLabelColor: scheme.onSurfaceVariant,
+                        tabs: const [
+                          Tab(text: "Actions"),
+                          Tab(text: "Overview"),
+                          Tab(text: "Analytics"),
+                          Tab(text: "Leaderboards"),
                         ],
                       ),
                     ),
                   ),
+                ];
+              },
+
+              ////////////////////////////////////////////////////////////
+              /// TAB CONTENT WITH REFRESH INDICATOR (FIX)
+              ////////////////////////////////////////////////////////////
+              body: TabBarView(
+                children: [
+                  _RefreshableTab(
+                    onRefresh: () => _refresh(ref),
+                    child: DashboardQuickActions(),
+                  ),
+
+                  _RefreshableTab(
+                    onRefresh: () => _refresh(ref),
+                    child: DashboardPipelineWidget(
+                      pipeline: dashboard.pipeline,
+                    ),
+                  ),
+
+                  _RefreshableTab(
+                    onRefresh: () => _refresh(ref),
+                    child: Column(
+                      children: [
+                        DashboardTrendsChart(trends: dashboard.trends),
+                        const Gap(24),
+                        AdminDistributionChart(
+                          distribution: dashboard.distribution,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  _RefreshableTab(
+                    onRefresh: () => _refresh(ref),
+                    child: DashboardLeaderboardsWidget(
+                      leaderboards: dashboard.leaderboards,
+                    ),
+                  ),
                 ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
 ////////////////////////////////////////////////////////////
-/// PREMIUM TAB BAR DELEGATE
+/// REFRESHABLE TAB (KEY FIX)
+////////////////////////////////////////////////////////////
+
+class _RefreshableTab extends StatelessWidget {
+  final Widget child;
+  final Future<void> Function() onRefresh;
+
+  const _RefreshableTab({required this.child, required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+
+        padding: const EdgeInsets.all(16),
+
+        child: child.animate().fadeIn().slideY(begin: .1),
+      ),
+    );
+  }
+}
+
+////////////////////////////////////////////////////////////
+/// TAB BAR DELEGATE
 ////////////////////////////////////////////////////////////
 
 class _PremiumTabBarDelegate extends SliverPersistentHeaderDelegate {
@@ -213,15 +182,10 @@ class _PremiumTabBarDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    final scheme = Theme.of(context).colorScheme;
-
     return Container(
-      color: scheme.surface,
-
+      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-
       alignment: Alignment.centerLeft,
-
       child: tabBar,
     );
   }
@@ -237,25 +201,7 @@ class _PremiumTabBarDelegate extends SliverPersistentHeaderDelegate {
 }
 
 ////////////////////////////////////////////////////////////
-/// Loading
-////////////////////////////////////////////////////////////
-
-class _DashboardLoading extends StatelessWidget {
-  const _DashboardLoading();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(32),
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
-}
-
-////////////////////////////////////////////////////////////
-/// Error
+/// ERROR
 ////////////////////////////////////////////////////////////
 
 class _DashboardError extends StatelessWidget {
@@ -267,35 +213,17 @@ class _DashboardError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
-
-            const Gap(16),
-
-            Text(
-              "Failed to load dashboard",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-
-            const Gap(8),
-
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
-            ),
-
-            const Gap(16),
-
-            ElevatedButton(onPressed: onRetry, child: const Text("Retry")),
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+          const Gap(16),
+          Text("Failed to load dashboard"),
+          const Gap(8),
+          Text(error),
+          const Gap(16),
+          ElevatedButton(onPressed: onRetry, child: const Text("Retry")),
+        ],
       ),
     );
   }

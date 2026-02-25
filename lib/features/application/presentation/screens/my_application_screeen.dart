@@ -5,11 +5,27 @@ import '../../../../core/ui/app_scaffold.dart';
 import '../../data/models/application_model.dart';
 import '../providers/my_application_provider.dart';
 
-class MyApplicationsScreen extends ConsumerWidget {
+class MyApplicationsScreen extends ConsumerStatefulWidget {
   const MyApplicationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApplicationsScreen> createState() =>
+      _MyApplicationsScreenState();
+}
+
+class _MyApplicationsScreenState extends ConsumerState<MyApplicationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    /// refresh every time screen opens
+    Future.microtask(() {
+      ref.read(myApplicationProvider.notifier).refresh();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(myApplicationProvider);
 
     return AppScaffold(

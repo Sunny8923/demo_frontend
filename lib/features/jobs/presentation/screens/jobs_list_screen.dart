@@ -14,33 +14,27 @@ class JobsListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final jobsState = ref.watch(jobsProvider);
+    final state = ref.watch(jobsProvider);
 
     return AppScaffold(
       title: "Jobs",
-
-      body: jobsState.when(
+      body: state.when(
         loading: () => const _LoadingState(),
-
         error: (e, _) => _ErrorState(message: e.toString()),
-
         data: (jobs) {
-          if (jobs.isEmpty) {
-            return const _EmptyState();
-          }
+          if (jobs.isEmpty) return const _EmptyState();
 
           return RefreshIndicator(
             onRefresh: () => ref.read(jobsProvider.notifier).refresh(),
-
             child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
               itemCount: jobs.length,
-
               itemBuilder: (context, index) {
                 final job = jobs[index];
 
-                return _JobCard(job: job)
+                return _PremiumJobCard(job: job)
                     .animate()
-                    .fadeIn(delay: (index * 50).ms, duration: 300.ms)
+                    .fadeIn(delay: (index * 40).ms, duration: 300.ms)
                     .slideY(begin: .05);
               },
             ),
@@ -52,119 +46,170 @@ class JobsListScreen extends ConsumerWidget {
 }
 
 ///////////////////////////////////////////////////////////////
-/// JOB CARD
+/// PREMIUM JOB CARD (MATCHES ADMIN DESIGN)
 ///////////////////////////////////////////////////////////////
 
-class _JobCard extends StatelessWidget {
+class _PremiumJobCard extends StatelessWidget {
   final JobModel job;
 
-  const _JobCard({required this.job});
+  const _PremiumJobCard({required this.job});
+
+  Color statusColor(String? status) {
+    if (status == null) return const Color(0xFF64748B);
+
+    switch (status.toLowerCase()) {
+      case "open":
+        return const Color(0xFF059669);
+      case "closed":
+        return const Color(0xFFDC2626);
+      default:
+        return const Color(0xFFD97706);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final color = statusColor(job.status);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-
-      elevation: 0,
-
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: Colors.grey.withOpacity(.15)),
-      ),
-
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => SubmitCandidateScreen(job: job)),
-          );
-        },
-
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => SubmitCandidateScreen(job: job)),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: LinearGradient(
+            colors: [theme.colorScheme.surface, color.withOpacity(.035)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: color.withOpacity(.18)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(.06),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: Row(
             children: [
-              /// Title
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      job.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+              //////////////////////////////////////////////////////
+              /// LEFT ACCENT BAR
+              //////////////////////////////////////////////////////
+              Container(
+                width: 5,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [color, color.withOpacity(.6)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+
+              //////////////////////////////////////////////////////
+              /// CONTENT
+              //////////////////////////////////////////////////////
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      //////////////////////////////////////////////////////
+                      /// TITLE + STATUS
+                      //////////////////////////////////////////////////////
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              job.title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -.2,
+                              ),
+                            ),
+                          ),
+                          _StatusBadge(
+                            status: job.status ?? "UNKNOWN",
+                            color: color,
+                          ),
+                        ],
                       ),
-                    ),
+
+                      const Gap(12),
+
+                      //////////////////////////////////////////////////////
+                      /// COMPANY
+                      //////////////////////////////////////////////////////
+                      _MutedRow(
+                        icon: Icons.business_outlined,
+                        text: job.companyName ?? "",
+                      ),
+
+                      const Gap(6),
+
+                      //////////////////////////////////////////////////////
+                      /// LOCATION
+                      //////////////////////////////////////////////////////
+                      _MutedRow(
+                        icon: Icons.location_on_outlined,
+                        text: job.location ?? "",
+                      ),
+
+                      const Gap(14),
+
+                      //////////////////////////////////////////////////////
+                      /// CHIPS
+                      //////////////////////////////////////////////////////
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (job.openings != null)
+                            _PremiumChip(
+                              icon: Icons.groups_outlined,
+                              text: "${job.openings} openings",
+                              color: const Color(0xFF2563EB),
+                            ),
+                          if (job.minExperience != null &&
+                              job.maxExperience != null)
+                            _PremiumChip(
+                              icon: Icons.work_outline,
+                              text:
+                                  "${job.minExperience}-${job.maxExperience} yrs",
+                              color: const Color(0xFF7C3AED),
+                            ),
+                          if (job.salaryMin != null && job.salaryMax != null)
+                            _PremiumChip(
+                              icon: Icons.currency_rupee,
+                              text: "${job.salaryMin}-${job.salaryMax}",
+                              color: const Color(0xFF059669),
+                            ),
+                        ],
+                      ),
+
+                      const Gap(16),
+
+                      //////////////////////////////////////////////////////
+                      /// APPLY BUTTON
+                      //////////////////////////////////////////////////////
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _ApplyButton(color: color),
+                      ),
+                    ],
                   ),
-
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey[400],
-                  ),
-                ],
-              ),
-
-              const Gap(8),
-
-              /// Company
-              Row(
-                children: [
-                  Icon(
-                    Icons.business_outlined,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
-
-                  const Gap(6),
-
-                  Text(
-                    job.companyName ?? "",
-                    style: TextStyle(color: Colors.grey[700]),
-                  ),
-                ],
-              ),
-
-              const Gap(6),
-
-              /// Location
-              Row(
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
-
-                  const Gap(6),
-
-                  Text(
-                    job.location ?? "",
-                    style: TextStyle(color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-
-              const Gap(10),
-
-              /// Created by + Apply button
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      "Created by ${job.createdByName ?? "Admin"}",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                  ),
-
-                  _ApplyButton(),
-                ],
+                ),
               ),
             ],
           ),
@@ -179,24 +224,130 @@ class _JobCard extends StatelessWidget {
 ///////////////////////////////////////////////////////////////
 
 class _ApplyButton extends StatelessWidget {
+  final Color color;
+
+  const _ApplyButton({required this.color});
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(.1),
-        borderRadius: BorderRadius.circular(8),
+        color: color.withOpacity(.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(.25)),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.arrow_forward, size: 16, color: color),
+          const Gap(6),
+          Text(
+            "Apply",
+            style: TextStyle(color: color, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
+///////////////////////////////////////////////////////////////
+/// STATUS BADGE
+///////////////////////////////////////////////////////////////
+
+class _StatusBadge extends StatelessWidget {
+  final String status;
+  final Color color;
+
+  const _StatusBadge({required this.status, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Text(
-        "Apply",
+        status.toUpperCase(),
         style: TextStyle(
-          color: theme.colorScheme.primary,
-          fontWeight: FontWeight.w600,
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 11,
         ),
+      ),
+    );
+  }
+}
+
+///////////////////////////////////////////////////////////////
+/// MUTED ROW
+///////////////////////////////////////////////////////////////
+
+class _MutedRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _MutedRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey[600]),
+        const Gap(6),
+        Text(
+          text,
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+///////////////////////////////////////////////////////////////
+/// PREMIUM CHIP
+///////////////////////////////////////////////////////////////
+
+class _PremiumChip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  const _PremiumChip({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const Gap(5),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color.withOpacity(.9),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,6 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/features/dashboard/admin/data/model/admin_dashboard_model.dart';
 import '../../data/repository/admin_dashboard_repository.dart';
+
+////////////////////////////////////////////////////////////
+/// Repository Provider
+////////////////////////////////////////////////////////////
 
 final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((
   ref,
@@ -9,20 +15,19 @@ final adminDashboardRepositoryProvider = Provider<AdminDashboardRepository>((
 });
 
 ////////////////////////////////////////////////////////////
-/// Dashboard Provider (ULTRA SMOOTH RANGE SWITCH)
+/// Dashboard Provider (PRODUCTION SAFE)
 ////////////////////////////////////////////////////////////
 
 final adminDashboardProvider =
-    AsyncNotifierProvider.autoDispose<
-      AdminDashboardNotifier,
-      AdminDashboardData
-    >(AdminDashboardNotifier.new);
+    AsyncNotifierProvider<AdminDashboardNotifier, AdminDashboardData>(
+      AdminDashboardNotifier.new,
+    );
 
 class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
   late final AdminDashboardRepository _repository;
 
   ////////////////////////////////////////////////////////////
-  /// CACHE FOR BOTH RANGES
+  /// CACHE
   ////////////////////////////////////////////////////////////
 
   final Map<String, AdminDashboardData> _cache = {};
@@ -34,29 +39,32 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
   String _currentRange = "7d";
 
   ////////////////////////////////////////////////////////////
-  /// BUILD → PRELOAD BOTH RANGES
+  /// BUILD → INITIAL LOAD
   ////////////////////////////////////////////////////////////
 
   @override
   Future<AdminDashboardData> build() async {
     _repository = ref.read(adminDashboardRepositoryProvider);
 
-    print("DEBUG: Preloading dashboard ranges");
+    print("DEBUG: Loading dashboard (initial)");
 
-    /// Fetch both ranges in parallel
-    final results = await Future.wait([
-      _repository.getDashboardStats(range: "7d"),
-      _repository.getDashboardStats(range: "30d"),
-    ]);
+    try {
+      /// preload both ranges for instant switching
+      final results = await Future.wait([
+        _repository.getDashboardStats(range: "7d"),
+        _repository.getDashboardStats(range: "30d"),
+      ]);
 
-    /// Store in cache
-    _cache["7d"] = results[0];
-    _cache["30d"] = results[1];
+      _cache["7d"] = results[0];
+      _cache["30d"] = results[1];
 
-    print("DEBUG: Preload complete");
+      print("DEBUG: Dashboard preload complete");
 
-    /// Return default
-    return _cache[_currentRange]!;
+      return _cache[_currentRange]!;
+    } catch (e) {
+      print("ERROR loading dashboard: $e");
+      throw e;
+    }
   }
 
   ////////////////////////////////////////////////////////////
@@ -66,30 +74,34 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
   Future<void> changeRange(String range) async {
     if (_currentRange == range) return;
 
-    print("DEBUG: Switching range instantly → $range");
+    print("DEBUG: Changing range → $range");
 
     _currentRange = range;
 
-    /// Instant switch from cache (NO LOADING STATE)
+    /// instant UI update from cache
     if (_cache.containsKey(range)) {
       state = AsyncValue.data(_cache[range]!);
 
-      /// Refresh silently in background
+      /// refresh silently in background
       _refreshInBackground(range);
     } else {
-      /// fallback (rare case)
+      /// fallback if not cached
       state = const AsyncValue.loading();
 
-      final data = await _repository.getDashboardStats(range: range);
+      try {
+        final data = await _repository.getDashboardStats(range: range);
 
-      _cache[range] = data;
+        _cache[range] = data;
 
-      state = AsyncValue.data(data);
+        state = AsyncValue.data(data);
+      } catch (e, stack) {
+        state = AsyncValue.error(e, stack);
+      }
     }
   }
 
   ////////////////////////////////////////////////////////////
-  /// BACKGROUND REFRESH (NO UI BLOCK)
+  /// BACKGROUND REFRESH
   ////////////////////////////////////////////////////////////
 
   Future<void> _refreshInBackground(String range) async {
@@ -100,17 +112,17 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
 
       _cache[range] = fresh;
 
-      /// update UI only if still same range
+      /// update UI only if still active range
       if (_currentRange == range) {
         state = AsyncValue.data(fresh);
       }
-    } catch (_) {
-      print("DEBUG: Background refresh failed (ignored)");
+    } catch (e) {
+      print("DEBUG: Background refresh failed: $e");
     }
   }
 
   ////////////////////////////////////////////////////////////
-  /// MANUAL REFRESH
+  /// MANUAL REFRESH (PULL TO REFRESH SAFE)
   ////////////////////////////////////////////////////////////
 
   Future<void> refresh() async {
@@ -118,11 +130,31 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
 
     print("DEBUG: Manual refresh → $range");
 
-    final fresh = await _repository.getDashboardStats(range: range);
+    try {
+      final fresh = await _repository.getDashboardStats(range: range);
 
-    _cache[range] = fresh;
+      _cache[range] = fresh;
 
-    state = AsyncValue.data(fresh);
+      state = AsyncValue.data(fresh);
+    } catch (e, stack) {
+      print("ERROR refreshing dashboard: $e");
+
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
+  /// FORCE FULL RELOAD (OPTIONAL)
+  ////////////////////////////////////////////////////////////
+
+  Future<void> reload() async {
+    print("DEBUG: Full reload");
+
+    state = const AsyncValue.loading();
+
+    final data = await build();
+
+    state = AsyncValue.data(data);
   }
 
   ////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:frontend/features/dashboard/user/presentation/widgets/user_dashboard_summary.dart';
-import 'package:frontend/features/dashboard/user/presentation/widgets/user_dashboard_wuick_actions.dart';
+import 'package:frontend/features/dashboard/user/presentation/widgets/user_dashboard_quick_actions.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../../core/ui/app_scaffold.dart';
