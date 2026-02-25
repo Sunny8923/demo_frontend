@@ -24,7 +24,8 @@ final adminDashboardProvider =
     );
 
 class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
-  late final AdminDashboardRepository _repository;
+  AdminDashboardRepository get _repository =>
+      ref.read(adminDashboardRepositoryProvider);
 
   ////////////////////////////////////////////////////////////
   /// CACHE
@@ -44,8 +45,6 @@ class AdminDashboardNotifier extends AsyncNotifier<AdminDashboardData> {
 
   @override
   Future<AdminDashboardData> build() async {
-    _repository = ref.read(adminDashboardRepositoryProvider);
-
     print("DEBUG: Loading dashboard (initial)");
 
     try {

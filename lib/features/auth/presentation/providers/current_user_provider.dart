@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/auth/presentation/providers/auth_state_provider.dart';
 
 import '../../data/models/user_model.dart';
 import '../../data/repository/auth_repository.dart';
@@ -16,8 +17,14 @@ class CurrentUserNotifier extends AsyncNotifier<UserModel?> {
   @override
   Future<UserModel?> build() async {
     try {
-      return await _repository.getCurrentUser();
+      final user = await _repository.getCurrentUser();
+      return user;
     } catch (e) {
+      // ✅ logout if fetch fails (server down, token invalid, etc)
+      Future.microtask(() {
+        ref.read(authStateProvider.notifier).logout();
+      });
+
       return null;
     }
   }

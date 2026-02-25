@@ -53,6 +53,7 @@ class AuthStateNotifier extends AsyncNotifier<bool> {
 
     // invalidate user to reload fresh profile
     ref.invalidate(currentUserProvider);
+    ref.invalidate(adminDashboardProvider);
 
     state = const AsyncData(true);
   }

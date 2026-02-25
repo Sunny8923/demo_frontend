@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:frontend/features/auth/presentation/providers/auth_state_provider.dart';
 import 'package:frontend/features/dashboard/recruiter/presentation/screens/recruiter_dashboard_screen.dart';
 import 'package:gap/gap.dart';
 
@@ -23,7 +24,15 @@ class DashboardRouter extends ConsumerWidget {
     return userState.when(
       loading: () => const _RouterLoadingScreen(),
 
-      error: (e, _) => _RouterErrorScreen(message: e.toString()),
+      error: (e, _) {
+        // ✅ logout user if fetching current user fails
+        Future.microtask(() {
+          ref.read(authStateProvider.notifier).logout();
+        });
+
+        // show loading while logout happens
+        return const _RouterLoadingScreen();
+      },
 
       data: (user) {
         if (user == null) {
