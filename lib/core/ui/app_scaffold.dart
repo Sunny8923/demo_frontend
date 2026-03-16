@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
 import 'package:frontend/core/ui/premium_appbar.dart';
-
 import '../../features/auth/presentation/providers/current_user_provider.dart';
 import 'app_drawer.dart';
 
@@ -40,9 +38,96 @@ class AppScaffold extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width >= 1100;
+
+    ////////////////////////////////////////////////////////////
+    /// DESKTOP / WEB LAYOUT
+    ////////////////////////////////////////////////////////////
+
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: backgroundColor ?? scheme.surfaceContainerLowest,
+
+        body: Row(
+          children: [
+            ////////////////////////////////////////////////////////////
+            /// SIDEBAR
+            ////////////////////////////////////////////////////////////
+            if (enableDrawer) const SizedBox(width: 260, child: AppDrawer()),
+
+            ////////////////////////////////////////////////////////////
+            /// CONTENT AREA
+            ////////////////////////////////////////////////////////////
+            Expanded(
+              child: Scaffold(
+                backgroundColor:
+                    backgroundColor ?? scheme.surfaceContainerLowest,
+
+                ////////////////////////////////////////////////////////////
+                /// APP BAR
+                ////////////////////////////////////////////////////////////
+                appBar: PremiumAppBar(title: title, actions: actions),
+
+                ////////////////////////////////////////////////////////////
+                /// BODY
+                ////////////////////////////////////////////////////////////
+                body: SafeArea(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      Widget content = Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 20,
+                        ),
+                        child: body
+                            .animate()
+                            .fadeIn(duration: 250.ms, curve: Curves.easeOut)
+                            .slideY(
+                              begin: .04,
+                              duration: 250.ms,
+                              curve: Curves.easeOut,
+                            ),
+                      );
+
+                      if (centerContent) {
+                        content = Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1200),
+                            child: content,
+                          ),
+                        );
+                      }
+
+                      return SizedBox(
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: content,
+                      );
+                    },
+                  ),
+                ),
+
+                ////////////////////////////////////////////////////////////
+                /// FAB
+                ////////////////////////////////////////////////////////////
+                floatingActionButton: floatingActionButton,
+
+                resizeToAvoidBottomInset: true,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// MOBILE LAYOUT (UNCHANGED)
+    ////////////////////////////////////////////////////////////
+
     return Scaffold(
       ////////////////////////////////////////////////////////////
-      /// BACKGROUND (PREMIUM DEPTH)
+      /// BACKGROUND
       ////////////////////////////////////////////////////////////
       backgroundColor: backgroundColor ?? scheme.surfaceContainerLowest,
 
@@ -52,7 +137,7 @@ class AppScaffold extends ConsumerWidget {
       drawer: enableDrawer ? const AppDrawer() : null,
 
       ////////////////////////////////////////////////////////////
-      /// PREMIUM APP BAR
+      /// APP BAR
       ////////////////////////////////////////////////////////////
       appBar: PremiumAppBar(title: title, actions: actions),
 
@@ -70,10 +155,6 @@ class AppScaffold extends ConsumerWidget {
                   .slideY(begin: .04, duration: 250.ms, curve: Curves.easeOut),
             );
 
-            ////////////////////////////////////////////////////////////
-            /// ONLY constrain width, don't break scroll
-            ////////////////////////////////////////////////////////////
-
             if (centerContent) {
               content = Center(
                 child: ConstrainedBox(
@@ -82,10 +163,6 @@ class AppScaffold extends ConsumerWidget {
                 ),
               );
             }
-
-            ////////////////////////////////////////////////////////////
-            /// CRITICAL FIX: allow scrollables to expand properly
-            ////////////////////////////////////////////////////////////
 
             return SizedBox(
               width: double.infinity,
@@ -97,12 +174,12 @@ class AppScaffold extends ConsumerWidget {
       ),
 
       ////////////////////////////////////////////////////////////
-      /// FLOATING BUTTON
+      /// FAB
       ////////////////////////////////////////////////////////////
       floatingActionButton: floatingActionButton,
 
       ////////////////////////////////////////////////////////////
-      /// PREMIUM KEYBOARD BEHAVIOR
+      /// KEYBOARD BEHAVIOR
       ////////////////////////////////////////////////////////////
       resizeToAvoidBottomInset: true,
     );

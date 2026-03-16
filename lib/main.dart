@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
+
+import 'core/router/app_router.dart';
 
 import 'core/shared/theme_provider.dart';
 import 'core/ui/app_theme.dart';
 
-import 'features/splash/presentation/screens/splash_screen.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
 
   runApp(const ProviderScope(child: RecruitmentDemoApp()));
 }
@@ -29,10 +32,6 @@ class RecruitmentDemoApp extends ConsumerWidget {
     final isDark = themeState.mode == AppThemeMode.dark;
     final seedColor = themeState.seedColor;
 
-    ////////////////////////////////////////////////////////////
-    /// SYSTEM UI OVERLAY (CRITICAL FOR PREMIUM LOOK)
-    ////////////////////////////////////////////////////////////
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -47,7 +46,10 @@ class RecruitmentDemoApp extends ConsumerWidget {
             ? Brightness.light
             : Brightness.dark,
       ),
-      child: MaterialApp(
+
+      child: MaterialApp.router(
+        routerConfig: ref.watch(routerProvider),
+
         title: "Recruitment Demo",
 
         debugShowCheckedModeBanner: false,
@@ -66,11 +68,6 @@ class RecruitmentDemoApp extends ConsumerWidget {
         /// MODE
         ////////////////////////////////////////////////////////////
         themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-
-        ////////////////////////////////////////////////////////////
-        /// START SCREEN
-        ////////////////////////////////////////////////////////////
-        home: const AppStartupScreen(),
       ),
     );
   }

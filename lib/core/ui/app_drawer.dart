@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
-
+import 'package:go_router/go_router.dart';
+import '../../core/router/route_names.dart';
 import '../../features/auth/presentation/providers/auth_state_provider.dart';
 import '../../features/auth/presentation/providers/current_user_provider.dart';
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/settings/settings_screen.dart';
 
 ////////////////////////////////////////////////////////////
 /// ROUTE ENUM
@@ -225,33 +224,97 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   ////////////////////////////////////////////////////////////
 
   Future<void> _handleNavigation(DrawerMenuItem item) async {
-    Navigator.pop(context);
+    if (Navigator.of(context).canPop()) {
+      Navigator.pop(context);
+    }
 
     setState(() {
       activeRoute = item.route;
     });
 
     switch (item.route) {
-      case DrawerRoute.settings:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SettingsScreen()),
-        );
+      ////////////////////////////////////////////////////////////
+      /// DASHBOARD
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.dashboard:
+        context.go(AppRoutes.dashboard);
         break;
+
+      ////////////////////////////////////////////////////////////
+      /// JOBS
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.jobs:
+        context.go(AppRoutes.jobs);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// APPLICATIONS
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.applications:
+        context.go(AppRoutes.applications);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// CANDIDATES
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.candidates:
+        context.go(AppRoutes.candidates);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// PARTNERS
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.partners:
+        context.go(AppRoutes.partners);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// RECRUITERS
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.recruiters:
+        context.go(AppRoutes.recruiters);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// ANALYTICS
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.analytics:
+        context.go(AppRoutes.analytics);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// PROFILE
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.profile:
+        context.go(AppRoutes.profile);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// SETTINGS
+      ////////////////////////////////////////////////////////////
+
+      case DrawerRoute.settings:
+        context.go(AppRoutes.settings);
+        break;
+
+      ////////////////////////////////////////////////////////////
+      /// LOGOUT
+      ////////////////////////////////////////////////////////////
 
       case DrawerRoute.logout:
         await ref.read(authStateProvider.notifier).logout();
 
         if (!mounted) return;
 
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (_) => false,
-        );
-        break;
-
-      default:
+        context.go(AppRoutes.login);
         break;
     }
   }
