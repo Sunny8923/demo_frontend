@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/core/ui/app_sidebar.dart';
 import '../ui/app_drawer.dart';
 
 class DashboardShell extends StatelessWidget {
@@ -12,13 +13,13 @@ class DashboardShell extends StatelessWidget {
     final isDesktop = width >= 1100;
 
     if (!isDesktop) {
-      return Scaffold(body: child);
+      return Scaffold(drawer: const AppDrawer(), body: child);
     }
 
     return Scaffold(
       body: Row(
         children: [
-          const SizedBox(width: 260, child: AppDrawer()),
+          const AppSidebar(),
           Expanded(child: child),
         ],
       ),

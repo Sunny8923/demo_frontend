@@ -16,17 +16,18 @@ class DashboardSummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView(
+    final width = MediaQuery.of(context).size.width;
+    final isWeb = width >= 900;
+
+    final grid = GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 260,
         mainAxisSpacing: 14,
         crossAxisSpacing: 14,
-        childAspectRatio: 1.1,
+        childAspectRatio: 1.35,
       ),
-
       children: [
         _card(
           context,
@@ -78,6 +79,28 @@ class DashboardSummaryCards extends StatelessWidget {
           hideChange: true,
         ),
       ],
+    );
+
+    if (!isWeb) return grid;
+
+    /// WEB WRAPPER CARD
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withOpacity(.35),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.05),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: grid,
     );
   }
 

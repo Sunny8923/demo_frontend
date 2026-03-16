@@ -1,5 +1,7 @@
 class ApiEndpoints {
-  static const baseUrl = "https://demobackend-production-1857.up.railway.app";
+  // static const baseUrl = "https://demobackend-production-1857.up.railway.app";
+
+  static const baseUrl = "http://192.168.1.7:4000";
 
   ////////////////////////////////////////////////////////////
   /// AUTH

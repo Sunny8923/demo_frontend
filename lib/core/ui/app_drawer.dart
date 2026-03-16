@@ -340,7 +340,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
       child: Column(
         children: [
-          _Header(name: name, email: email, role: role),
+          if (MediaQuery.of(context).size.width < 1100)
+            _Header(name: name, email: email, role: role)
+          else
+            _DesktopSidebarHeader(),
 
           Expanded(
             child: ListView(
@@ -460,6 +463,29 @@ class _Header extends StatelessWidget {
         ],
       ),
     ).animate().fadeIn().slideY(begin: -.2);
+  }
+}
+
+class _DesktopSidebarHeader extends StatelessWidget {
+  const _DesktopSidebarHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      height: 72,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Text(
+        "Admin Panel",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: scheme.onSurface,
+        ),
+      ),
+    );
   }
 }
 

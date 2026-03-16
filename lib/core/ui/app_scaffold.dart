@@ -48,72 +48,41 @@ class AppScaffold extends ConsumerWidget {
     if (isDesktop) {
       return Scaffold(
         backgroundColor: backgroundColor ?? scheme.surfaceContainerLowest,
-
-        body: Row(
+        body: Column(
           children: [
-            ////////////////////////////////////////////////////////////
-            /// SIDEBAR
-            ////////////////////////////////////////////////////////////
-            if (enableDrawer) const SizedBox(width: 260, child: AppDrawer()),
+            PremiumAppBar(title: title, actions: actions),
 
-            ////////////////////////////////////////////////////////////
-            /// CONTENT AREA
-            ////////////////////////////////////////////////////////////
             Expanded(
-              child: Scaffold(
-                backgroundColor:
-                    backgroundColor ?? scheme.surfaceContainerLowest,
+              child: SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    Widget content = Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
+                      child: body
+                          .animate()
+                          .fadeIn(duration: 250.ms)
+                          .slideY(begin: .04, duration: 250.ms),
+                    );
 
-                ////////////////////////////////////////////////////////////
-                /// APP BAR
-                ////////////////////////////////////////////////////////////
-                appBar: PremiumAppBar(title: title, actions: actions),
-
-                ////////////////////////////////////////////////////////////
-                /// BODY
-                ////////////////////////////////////////////////////////////
-                body: SafeArea(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      Widget content = Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 20,
+                    if (centerContent) {
+                      content = Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: content,
                         ),
-                        child: body
-                            .animate()
-                            .fadeIn(duration: 250.ms, curve: Curves.easeOut)
-                            .slideY(
-                              begin: .04,
-                              duration: 250.ms,
-                              curve: Curves.easeOut,
-                            ),
                       );
+                    }
 
-                      if (centerContent) {
-                        content = Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 1200),
-                            child: content,
-                          ),
-                        );
-                      }
-
-                      return SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: content,
-                      );
-                    },
-                  ),
+                    return SizedBox(
+                      width: double.infinity,
+                      height: double.infinity,
+                      child: content,
+                    );
+                  },
                 ),
-
-                ////////////////////////////////////////////////////////////
-                /// FAB
-                ////////////////////////////////////////////////////////////
-                floatingActionButton: floatingActionButton,
-
-                resizeToAvoidBottomInset: true,
               ),
             ),
           ],

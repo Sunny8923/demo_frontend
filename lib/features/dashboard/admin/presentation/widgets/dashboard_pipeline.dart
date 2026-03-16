@@ -60,19 +60,49 @@ class DashboardPipelineWidget extends StatelessWidget {
           ////////////////////////////////////////////////////////////
           /// STAGE TILES
           ////////////////////////////////////////////////////////////
-          ...stages.map((stage) {
-            final count = pipeline.stages[stage.key] ?? 0;
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth > 700;
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _StageTile(
-                label: stage.label,
-                count: count,
-                icon: stage.icon,
-                color: stage.color,
-              ),
-            );
-          }).toList(),
+              if (!isDesktop) {
+                // mobile layout (your current vertical list)
+                return Column(
+                  children: stages.map((stage) {
+                    final count = pipeline.stages[stage.key] ?? 0;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _StageTile(
+                        label: stage.label,
+                        count: count,
+                        icon: stage.icon,
+                        color: stage.color,
+                      ),
+                    );
+                  }).toList(),
+                );
+              }
+
+              // desktop layout (horizontal pipeline)
+              return Row(
+                children: stages.map((stage) {
+                  final count = pipeline.stages[stage.key] ?? 0;
+
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: _StageTile(
+                        label: stage.label,
+                        count: count,
+                        icon: stage.icon,
+                        color: stage.color,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
         ],
       ),
     );

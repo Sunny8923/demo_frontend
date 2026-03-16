@@ -28,12 +28,8 @@ class AdminDashboardScreen extends ConsumerWidget {
     final dashboardState = ref.watch(adminDashboardProvider);
     final currentUser = ref.watch(currentUserProvider).value;
 
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
     return AppScaffold(
       title: "Admin Dashboard",
-
       body: dashboardState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
 
@@ -43,97 +39,203 @@ class AdminDashboardScreen extends ConsumerWidget {
         ),
 
         data: (dashboard) {
-          return DefaultTabController(
-            length: 4,
-
-            child: NestedScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth >= 900;
 
               ////////////////////////////////////////////////////////////
-              /// HEADER
+              /// DESKTOP DASHBOARD
               ////////////////////////////////////////////////////////////
-              headerSliverBuilder: (context, innerBoxScrolled) {
-                return [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      child: DashboardHeader(
-                        adminName: currentUser?.name ?? "Admin",
-                      ).animate().fadeIn(duration: 400.ms).slideY(begin: .2),
-                    ),
-                  ),
 
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: DashboardSummaryCards(
-                        summary: dashboard.summary,
-                        summaryChange: dashboard.summaryChange,
-                      ).animate().fadeIn(delay: 100.ms).slideY(begin: .1),
-                    ),
-                  ),
+              if (isDesktop) {
+                return RefreshIndicator(
+                  onRefresh: () => _refresh(ref),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(20),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1400),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ////////////////////////////////////////////////////
+                            /// HEADER
+                            ////////////////////////////////////////////////////
+                            DashboardHeader(
+                              adminName: currentUser?.name ?? "Admin",
+                            ).animate().fadeIn().slideY(begin: .2),
 
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _PremiumTabBarDelegate(
-                      TabBar(
-                        isScrollable: true,
-                        labelStyle: theme.textTheme.labelLarge,
-                        indicatorColor: scheme.primary,
-                        indicatorWeight: 2.5,
-                        labelColor: scheme.primary,
-                        unselectedLabelColor: scheme.onSurfaceVariant,
-                        tabs: const [
-                          Tab(text: "Actions"),
-                          Tab(text: "Overview"),
-                          Tab(text: "Analytics"),
-                          Tab(text: "Leaderboards"),
-                        ],
+                            const Gap(24),
+
+                            ////////////////////////////////////////////////////
+                            /// SUMMARY + QUICK ACTIONS
+                            ////////////////////////////////////////////////////
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child:
+                                      DashboardSummaryCards(
+                                            summary: dashboard.summary,
+                                            summaryChange:
+                                                dashboard.summaryChange,
+                                          )
+                                          .animate()
+                                          .fadeIn(delay: 100.ms)
+                                          .slideY(begin: .1),
+                                ),
+                                const Gap(24),
+                                Expanded(
+                                  flex: 1,
+                                  child: DashboardQuickActions(),
+                                ),
+                              ],
+                            ),
+
+                            const Gap(32),
+
+                            ////////////////////////////////////////////////////
+                            /// HERO CHART
+                            ////////////////////////////////////////////////////
+                            DashboardTrendsChart(trends: dashboard.trends),
+
+                            const Gap(32),
+
+                            ////////////////////////////////////////////////////
+                            /// PIPELINE + DISTRIBUTION
+                            ////////////////////////////////////////////////////
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: DashboardPipelineWidget(
+                                    pipeline: dashboard.pipeline,
+                                  ),
+                                ),
+                                const Gap(24),
+                                Expanded(
+                                  flex: 1,
+                                  child: AdminDistributionChart(
+                                    distribution: dashboard.distribution,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const Gap(32),
+
+                            ////////////////////////////////////////////////////
+                            /// LEADERBOARDS
+                            ////////////////////////////////////////////////////
+                            DashboardLeaderboardsWidget(
+                              leaderboards: dashboard.leaderboards,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ];
-              },
+                );
+              }
 
               ////////////////////////////////////////////////////////////
-              /// TAB CONTENT WITH REFRESH INDICATOR (FIX)
+              /// MOBILE DASHBOARD (UNCHANGED)
               ////////////////////////////////////////////////////////////
-              body: TabBarView(
-                children: [
-                  _RefreshableTab(
-                    onRefresh: () => _refresh(ref),
-                    child: DashboardQuickActions(),
-                  ),
 
-                  _RefreshableTab(
-                    onRefresh: () => _refresh(ref),
-                    child: DashboardPipelineWidget(
-                      pipeline: dashboard.pipeline,
-                    ),
-                  ),
+              return DefaultTabController(
+                length: 4,
+                child: NestedScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
 
-                  _RefreshableTab(
-                    onRefresh: () => _refresh(ref),
-                    child: Column(
-                      children: [
-                        DashboardTrendsChart(trends: dashboard.trends),
-                        const Gap(24),
-                        AdminDistributionChart(
-                          distribution: dashboard.distribution,
+                  ////////////////////////////////////////////////////////////
+                  /// HEADER
+                  ////////////////////////////////////////////////////////////
+                  headerSliverBuilder: (context, innerBoxScrolled) {
+                    return [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                          child:
+                              DashboardHeader(
+                                    adminName: currentUser?.name ?? "Admin",
+                                  )
+                                  .animate()
+                                  .fadeIn(duration: 400.ms)
+                                  .slideY(begin: .2),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
 
-                  _RefreshableTab(
-                    onRefresh: () => _refresh(ref),
-                    child: DashboardLeaderboardsWidget(
-                      leaderboards: dashboard.leaderboards,
-                    ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: DashboardSummaryCards(
+                            summary: dashboard.summary,
+                            summaryChange: dashboard.summaryChange,
+                          ).animate().fadeIn(delay: 100.ms).slideY(begin: .1),
+                        ),
+                      ),
+
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: _PremiumTabBarDelegate(
+                          const TabBar(
+                            isScrollable: true,
+                            tabs: [
+                              Tab(text: "Actions"),
+                              Tab(text: "Overview"),
+                              Tab(text: "Analytics"),
+                              Tab(text: "Leaderboards"),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ];
+                  },
+
+                  ////////////////////////////////////////////////////////////
+                  /// MOBILE TAB CONTENT
+                  ////////////////////////////////////////////////////////////
+                  body: TabBarView(
+                    children: [
+                      _RefreshableTab(
+                        onRefresh: () => _refresh(ref),
+                        child: DashboardQuickActions(),
+                      ),
+
+                      _RefreshableTab(
+                        onRefresh: () => _refresh(ref),
+                        child: DashboardPipelineWidget(
+                          pipeline: dashboard.pipeline,
+                        ),
+                      ),
+
+                      _RefreshableTab(
+                        onRefresh: () => _refresh(ref),
+                        child: Column(
+                          children: [
+                            DashboardTrendsChart(trends: dashboard.trends),
+                            const Gap(24),
+                            AdminDistributionChart(
+                              distribution: dashboard.distribution,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      _RefreshableTab(
+                        onRefresh: () => _refresh(ref),
+                        child: DashboardLeaderboardsWidget(
+                          leaderboards: dashboard.leaderboards,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
@@ -142,7 +244,7 @@ class AdminDashboardScreen extends ConsumerWidget {
 }
 
 ////////////////////////////////////////////////////////////
-/// REFRESHABLE TAB (KEY FIX)
+/// REFRESHABLE TAB
 ////////////////////////////////////////////////////////////
 
 class _RefreshableTab extends StatelessWidget {
@@ -155,12 +257,9 @@ class _RefreshableTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: onRefresh,
-
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-
         padding: const EdgeInsets.all(16),
-
         child: child.animate().fadeIn().slideY(begin: .1),
       ),
     );
@@ -177,11 +276,7 @@ class _PremiumTabBarDelegate extends SliverPersistentHeaderDelegate {
   const _PremiumTabBarDelegate(this.tabBar);
 
   @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
+  Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
     return Container(
       color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -218,7 +313,7 @@ class _DashboardError extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
           const Gap(16),
-          Text("Failed to load dashboard"),
+          const Text("Failed to load dashboard"),
           const Gap(8),
           Text(error),
           const Gap(16),

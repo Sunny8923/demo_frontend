@@ -11,17 +11,16 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return AppBar(
-      automaticallyImplyLeading: true, // ✅ required for drawer
-
+      toolbarHeight: 72,
+      automaticallyImplyLeading: true,
       title: Text(title),
-
       actions: actions,
-      backgroundColor: scheme.primary, // ✅ main brand color
+      backgroundColor: scheme.primary,
       foregroundColor: scheme.onPrimary,
       elevation: 0,
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(72);
 }
