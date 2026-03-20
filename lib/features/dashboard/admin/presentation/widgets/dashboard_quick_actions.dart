@@ -8,6 +8,7 @@ import '../../../../jobs/presentation/screens/admin_jobs_screen.dart';
 import '../../../../partners/presentation/screens/pending_partner_screen.dart';
 import '../../../../application/presentation/screens/admin_application_screeen.dart';
 import '../../../../application/presentation/screens/ats_pipeline_screen.dart';
+import '../screens/upload_candidates_screen.dart';
 
 class DashboardQuickActions extends StatelessWidget {
   const DashboardQuickActions({super.key});
@@ -158,6 +159,34 @@ class DashboardQuickActions extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const AtsPipelineScreen(),
+                    ),
+                  );
+                },
+              ),
+              _ActionCard(
+                icon: Icons.upload_file_rounded,
+                label: "Upload Candidates",
+                color: const Color(0xFF16A34A),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          UploadCandidatesScreen(), // we will create next
+                    ),
+                  );
+                },
+              ),
+
+              _ActionCard(
+                icon: Icons.groups_rounded,
+                label: "View Candidates",
+                color: const Color(0xFF0EA5E9),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ViewCandidatesScreen(), // later
                     ),
                   );
                 },
