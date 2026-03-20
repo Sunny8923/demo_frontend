@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/features/dashboard/admin/presentation/screens/create_recruiter_screen.dart';
+import 'package:frontend/features/dashboard/admin/presentation/screens/view_candidates_screen.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../jobs/presentation/screens/create_single_job_screen.dart';
@@ -186,7 +187,7 @@ class DashboardQuickActions extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const ViewCandidatesScreen(), // later
+                      builder: (_) => ViewCandidatesScreen(), // later
                     ),
                   );
                 },

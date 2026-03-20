@@ -1,7 +1,9 @@
 import 'dart:html' as html;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+
 import '../providers/resume_upload_provider.dart';
 import 'job_status_screen.dart';
 

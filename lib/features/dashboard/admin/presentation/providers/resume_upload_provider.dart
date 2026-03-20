@@ -24,13 +24,21 @@ class ResumeUploadNotifier extends AsyncNotifier<String?> {
   ////////////////////////////////////////////////////////////
 
   Future<String> upload(List<dynamic> files) async {
+    print("PROVIDER: Upload started");
+
     state = const AsyncLoading();
 
     final result = await AsyncValue.guard(() async {
-      return await _repo.uploadResumes(files);
+      final jobId = await _repo.uploadResumes(files);
+      print("PROVIDER: Upload success, jobId = $jobId");
+      return jobId;
     });
 
     state = result;
+
+    if (result.hasError) {
+      print("PROVIDER: Upload failed → ${result.error}");
+    }
 
     return result.value!;
   }
