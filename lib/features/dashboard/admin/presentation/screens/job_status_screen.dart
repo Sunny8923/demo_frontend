@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/core/shared/current_job_provider.dart';
+import 'package:frontend/features/dashboard/admin/presentation/screens/resume_result_screen.dart';
 import 'package:gap/gap.dart';
 
 import '../providers/job_status_provider.dart';
 
 class JobStatusScreen extends ConsumerStatefulWidget {
-  final String jobId;
+  final String? jobId;
 
-  const JobStatusScreen({super.key, required this.jobId});
+  const JobStatusScreen({super.key, this.jobId});
 
   @override
   ConsumerState<JobStatusScreen> createState() => _JobStatusScreenState();
@@ -23,7 +25,12 @@ class _JobStatusScreenState extends ConsumerState<JobStatusScreen> {
     super.initState();
 
     Future.microtask(() {
-      ref.read(jobStatusProvider.notifier).start(widget.jobId);
+      final globalJobId = ref.read(currentJobProvider);
+      final idToUse = widget.jobId ?? globalJobId;
+
+      if (idToUse != null) {
+        ref.read(jobStatusProvider.notifier).start(idToUse);
+      }
     });
   }
 
@@ -35,6 +42,19 @@ class _JobStatusScreenState extends ConsumerState<JobStatusScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(jobStatusProvider);
     final theme = Theme.of(context);
+
+    final globalJobId = ref.watch(currentJobProvider);
+
+    ////////////////////////////////////////////////////////////
+    /// NO JOB CASE
+    ////////////////////////////////////////////////////////////
+
+    if (widget.jobId == null && globalJobId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Processing Resumes")),
+        body: const Center(child: Text("No active job found")),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text("Processing Resumes")),
@@ -61,17 +81,8 @@ class _JobStatusScreenState extends ConsumerState<JobStatusScreen> {
               /// DATA
               ////////////////////////////////////////////////////////////
               data: (data) {
-                if (data.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final progress = data["progress"] ?? {};
-                final stats = data["stats"] ?? {};
-                final activity = data["activity"] ?? {};
-                final summary = data["summary"] ?? {};
-
-                final percentage = progress["percentage"] ?? 0;
-                final isCompleted = summary["completed"] == true;
+                final percentage = data.percentage;
+                final isCompleted = data.completed;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +105,7 @@ class _JobStatusScreenState extends ConsumerState<JobStatusScreen> {
                     /// PROGRESS BAR
                     ////////////////////////////////////////////////////////////
                     LinearProgressIndicator(
-                      value: (percentage as num).toDouble() / 100,
+                      value: percentage / 100,
                       minHeight: 10,
                     ),
 
@@ -112,7 +123,7 @@ class _JobStatusScreenState extends ConsumerState<JobStatusScreen> {
                     const Gap(6),
 
                     Text(
-                      activity["currentFile"] ?? "-",
+                      data.currentFile.isEmpty ? "-" : data.currentFile,
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
 
@@ -127,17 +138,22 @@ class _JobStatusScreenState extends ConsumerState<JobStatusScreen> {
                       children: [
                         _StatCard(
                           label: "Created",
-                          value: (stats["created"] ?? 0).toString(),
+                          value: data.created.toString(),
                           color: Colors.green,
                         ),
                         _StatCard(
                           label: "Duplicate",
-                          value: (stats["duplicate"] ?? 0).toString(),
+                          value: data.duplicate.toString(),
                           color: Colors.orange,
                         ),
                         _StatCard(
+                          label: "Skipped",
+                          value: data.skipped.toString(),
+                          color: Colors.blue,
+                        ),
+                        _StatCard(
                           label: "Errors",
-                          value: (stats["error"] ?? 0).toString(),
+                          value: data.error.toString(),
                           color: Colors.red,
                         ),
                       ],
@@ -146,17 +162,42 @@ class _JobStatusScreenState extends ConsumerState<JobStatusScreen> {
                     const Spacer(),
 
                     ////////////////////////////////////////////////////////////
-                    /// DONE BUTTON
+                    /// ACTION BUTTONS
                     ////////////////////////////////////////////////////////////
                     if (isCompleted)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text("Done"),
-                        ),
+                      Column(
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ResumeResultScreen(
+                                      result: data.rawResponse,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text("View Results"),
+                            ),
+                          ),
+
+                          const Gap(10),
+
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                ref.read(currentJobProvider.notifier).clear();
+
+                                Navigator.pop(context);
+                              },
+                              child: const Text("Close"),
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 );

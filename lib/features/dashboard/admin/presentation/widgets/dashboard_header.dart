@@ -13,7 +13,6 @@ class DashboardHeader extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    /// WATCH PROVIDER RANGE DIRECTLY
     final range = ref.watch(
       adminDashboardProvider.notifier.select((n) => n.currentRange),
     );
@@ -26,7 +25,6 @@ class DashboardHeader extends ConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.all(20),
-
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(22),
@@ -38,14 +36,12 @@ class DashboardHeader extends ConsumerWidget {
           ),
         ],
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               _Avatar(adminName),
-
               const Gap(12),
 
               Expanded(
@@ -69,7 +65,6 @@ class DashboardHeader extends ConsumerWidget {
                 ),
               ),
 
-              /// NOW THIS UPDATES CORRECTLY
               _RangeChip(range),
             ],
           ),
@@ -141,7 +136,6 @@ class _RangeChip extends ConsumerWidget {
         color: Colors.white.withOpacity(.18),
         borderRadius: BorderRadius.circular(20),
       ),
-
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -158,26 +152,27 @@ class _RangeChip extends ConsumerWidget {
     bool selected,
     AdminDashboardNotifier notifier,
   ) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-
-      onTap: () {
-        notifier.changeRange(value);
-      },
-
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-
-        decoration: BoxDecoration(
-          color: selected ? Colors.white.withOpacity(.28) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-
-        child: Text(
-          text,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+    return Material(
+      color: Colors.transparent, // 👈 IMPORTANT
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          notifier.changeRange(value);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected
+                ? Colors.white.withOpacity(.28)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            ),
           ),
         ),
       ),

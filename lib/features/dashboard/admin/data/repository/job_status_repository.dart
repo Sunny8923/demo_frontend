@@ -10,7 +10,8 @@ class JobStatusRepository {
 
       return response.data;
     } on DioException catch (e) {
-      print("STATUS ERROR: ${e.response?.data}");
+      print("STATUS ERROR: ${e.response?.statusCode}");
+      print("STATUS DATA: ${e.response?.data}");
       rethrow;
     }
   }

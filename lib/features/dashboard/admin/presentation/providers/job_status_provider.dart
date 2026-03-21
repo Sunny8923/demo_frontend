@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/dashboard/admin/data/model/job_status_model.dart';
 import '../../data/repository/job_status_repository.dart';
 
 ////////////////////////////////////////////////////////////
@@ -12,24 +13,33 @@ final jobStatusRepositoryProvider = Provider((ref) => JobStatusRepository());
 /// NOTIFIER
 ////////////////////////////////////////////////////////////
 
-class JobStatusNotifier extends AsyncNotifier<Map<String, dynamic>> {
+class JobStatusNotifier extends AsyncNotifier<JobStatus> {
   Timer? _timer;
   String? _jobId;
+
+  bool _isFetching = false;
+  bool _started = false;
 
   JobStatusRepository get _repo => ref.read(jobStatusRepositoryProvider);
 
   ////////////////////////////////////////////////////////////
-  /// PUBLIC METHOD (SET JOB ID)
+  /// START
   ////////////////////////////////////////////////////////////
 
   Future<void> start(String jobId) async {
+    if (_started && _jobId == jobId) return;
+
+    _started = true;
     _jobId = jobId;
 
     state = const AsyncLoading();
 
     try {
-      final data = await _repo.getStatus(jobId);
-      state = AsyncData(data);
+      final res = await _repo.getStatus(jobId);
+
+      final jobStatus = JobStatus.fromJson(res);
+
+      state = AsyncData(jobStatus);
 
       _startPolling();
     } catch (e, st) {
@@ -38,13 +48,30 @@ class JobStatusNotifier extends AsyncNotifier<Map<String, dynamic>> {
   }
 
   ////////////////////////////////////////////////////////////
-  /// BUILD (EMPTY)
+  /// BUILD (IMPORTANT FIX)
   ////////////////////////////////////////////////////////////
 
   @override
-  Future<Map<String, dynamic>> build() async {
-    // empty initial state
-    return {};
+  Future<JobStatus> build() async {
+    return JobStatus(
+      status: "",
+      total: 0,
+      processed: 0,
+      percentage: 0,
+      created: 0,
+      duplicate: 0,
+      skipped: 0,
+      error: 0,
+      currentFile: "",
+      completed: false,
+      remaining: 0,
+      results: [],
+
+      ////////////////////////////////////////////////////////////
+      /// REQUIRED (NEW)
+      ////////////////////////////////////////////////////////////
+      rawResponse: {},
+    );
   }
 
   ////////////////////////////////////////////////////////////
@@ -54,20 +81,32 @@ class JobStatusNotifier extends AsyncNotifier<Map<String, dynamic>> {
   void _startPolling() {
     if (_timer != null || _jobId == null) return;
 
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) async {
-      try {
-        final data = await _repo.getStatus(_jobId!);
-        state = AsyncData(data);
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) async {
+      if (_isFetching) return;
 
-        if (data["status"] == "completed") {
+      _isFetching = true;
+
+      try {
+        final res = await _repo.getStatus(_jobId!);
+
+        final jobStatus = JobStatus.fromJson(res);
+
+        state = AsyncData(jobStatus);
+
+        if (jobStatus.completed) {
           _timer?.cancel();
           _timer = null;
         }
-      } catch (e, st) {
-        state = AsyncError(e, st);
+      } catch (e) {
+        print("Polling error (ignored): $e");
+      } finally {
+        _isFetching = false;
       }
     });
 
+    ////////////////////////////////////////////////////////////
+    /// CLEANUP
+    ////////////////////////////////////////////////////////////
     ref.onDispose(() {
       _timer?.cancel();
     });
@@ -75,10 +114,9 @@ class JobStatusNotifier extends AsyncNotifier<Map<String, dynamic>> {
 }
 
 ////////////////////////////////////////////////////////////
-/// PROVIDER (NO FAMILY)
+/// PROVIDER
 ////////////////////////////////////////////////////////////
 
-final jobStatusProvider =
-    AsyncNotifierProvider<JobStatusNotifier, Map<String, dynamic>>(
-      JobStatusNotifier.new,
-    );
+final jobStatusProvider = AsyncNotifierProvider<JobStatusNotifier, JobStatus>(
+  JobStatusNotifier.new,
+);

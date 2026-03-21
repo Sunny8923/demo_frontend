@@ -3,18 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:gap/gap.dart';
 
-import '../../../../../core/ui/app_scaffold.dart';
-
 import '../../../../auth/presentation/providers/current_user_provider.dart';
 import '../providers/admin_dashboard_provider.dart';
 
 import '../widgets/dashboard_header.dart';
 import '../widgets/dashboard_summary_cards.dart';
-import '../widgets/dashboard_pipeline.dart';
 import '../widgets/dashboard_trends_chart.dart';
-import '../widgets/dashboard_distribution_chart.dart';
-import '../widgets/dashboard_leaderboards.dart';
 import '../widgets/dashboard_quick_actions.dart';
+import '../widgets/resume_job_banner.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -28,271 +24,137 @@ class AdminDashboardScreen extends ConsumerWidget {
     final dashboardState = ref.watch(adminDashboardProvider);
     final currentUser = ref.watch(currentUserProvider).value;
 
-    return AppScaffold(
-      title: "Admin Dashboard",
-      body: dashboardState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+    ////////////////////////////////////////////////////////////
+    /// ❌ REMOVED AppScaffold (IMPORTANT)
+    ////////////////////////////////////////////////////////////
 
-        error: (error, stack) => _DashboardError(
-          error: error.toString(),
-          onRetry: () => _refresh(ref),
-        ),
+    return dashboardState.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
 
-        data: (dashboard) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final isDesktop = constraints.maxWidth >= 900;
+      error: (error, _) => _DashboardError(
+        error: error.toString(),
+        onRetry: () => _refresh(ref),
+      ),
 
-              ////////////////////////////////////////////////////////////
-              /// DESKTOP DASHBOARD
-              ////////////////////////////////////////////////////////////
+      data: (dashboard) {
+        return RefreshIndicator(
+          onRefresh: () => _refresh(ref),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
 
-              if (isDesktop) {
-                return RefreshIndicator(
-                  onRefresh: () => _refresh(ref),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(20),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1400),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ////////////////////////////////////////////////////
-                            /// HEADER
-                            ////////////////////////////////////////////////////
-                            DashboardHeader(
-                              adminName: currentUser?.name ?? "Admin",
-                            ).animate().fadeIn().slideY(begin: .2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ////////////////////////////////////////////////////
+                /// HEADER
+                ////////////////////////////////////////////////////
+                DashboardHeader(
+                  adminName: currentUser?.name ?? "Admin",
+                ).animate().fadeIn().slideY(begin: .2),
 
-                            const Gap(24),
+                const Gap(16),
 
-                            ////////////////////////////////////////////////////
-                            /// SUMMARY + QUICK ACTIONS
-                            ////////////////////////////////////////////////////
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child:
-                                      DashboardSummaryCards(
-                                            summary: dashboard.summary,
-                                            summaryChange:
-                                                dashboard.summaryChange,
-                                          )
-                                          .animate()
-                                          .fadeIn(delay: 100.ms)
-                                          .slideY(begin: .1),
-                                ),
-                                const Gap(24),
-                                Expanded(
-                                  flex: 1,
-                                  child: DashboardQuickActions(),
-                                ),
-                              ],
+                ////////////////////////////////////////////////////
+                /// BANNER
+                ////////////////////////////////////////////////////
+                const ResumeJobBanner(),
+
+                const Gap(24),
+
+                ////////////////////////////////////////////////////
+                /// SUMMARY
+                ////////////////////////////////////////////////////
+                DashboardSummaryCards(
+                  summary: dashboard.summary,
+                  summaryChange: dashboard.summaryChange,
+                ).animate().fadeIn(delay: 100.ms),
+
+                const Gap(24),
+
+                ////////////////////////////////////////////////////
+                /// MAIN GRID (CLEAN)
+                ////////////////////////////////////////////////////
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isDesktop = constraints.maxWidth > 900;
+
+                    if (!isDesktop) {
+                      return Column(
+                        children: [
+                          _Card(child: DashboardQuickActions()),
+                          const Gap(16),
+                          _Card(
+                            child: DashboardTrendsChart(
+                              trends: dashboard.trends,
                             ),
+                          ),
+                        ],
+                      );
+                    }
 
-                            const Gap(32),
-
-                            ////////////////////////////////////////////////////
-                            /// HERO CHART
-                            ////////////////////////////////////////////////////
-                            DashboardTrendsChart(trends: dashboard.trends),
-
-                            const Gap(32),
-
-                            ////////////////////////////////////////////////////
-                            /// PIPELINE + DISTRIBUTION
-                            ////////////////////////////////////////////////////
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: DashboardPipelineWidget(
-                                    pipeline: dashboard.pipeline,
-                                  ),
-                                ),
-                                const Gap(24),
-                                Expanded(
-                                  flex: 1,
-                                  child: AdminDistributionChart(
-                                    distribution: dashboard.distribution,
-                                  ),
-                                ),
-                              ],
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        //////////////////////////////////////////////////
+                        /// LEFT → MAIN CHART
+                        //////////////////////////////////////////////////
+                        Expanded(
+                          flex: 2,
+                          child: _Card(
+                            child: DashboardTrendsChart(
+                              trends: dashboard.trends,
                             ),
-
-                            const Gap(32),
-
-                            ////////////////////////////////////////////////////
-                            /// LEADERBOARDS
-                            ////////////////////////////////////////////////////
-                            DashboardLeaderboardsWidget(
-                              leaderboards: dashboard.leaderboards,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }
-
-              ////////////////////////////////////////////////////////////
-              /// MOBILE DASHBOARD (UNCHANGED)
-              ////////////////////////////////////////////////////////////
-
-              return DefaultTabController(
-                length: 4,
-                child: NestedScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-
-                  ////////////////////////////////////////////////////////////
-                  /// HEADER
-                  ////////////////////////////////////////////////////////////
-                  headerSliverBuilder: (context, innerBoxScrolled) {
-                    return [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                          child:
-                              DashboardHeader(
-                                    adminName: currentUser?.name ?? "Admin",
-                                  )
-                                  .animate()
-                                  .fadeIn(duration: 400.ms)
-                                  .slideY(begin: .2),
-                        ),
-                      ),
-
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: DashboardSummaryCards(
-                            summary: dashboard.summary,
-                            summaryChange: dashboard.summaryChange,
-                          ).animate().fadeIn(delay: 100.ms).slideY(begin: .1),
-                        ),
-                      ),
-
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: _PremiumTabBarDelegate(
-                          const TabBar(
-                            isScrollable: true,
-                            tabs: [
-                              Tab(text: "Actions"),
-                              Tab(text: "Overview"),
-                              Tab(text: "Analytics"),
-                              Tab(text: "Leaderboards"),
-                            ],
                           ),
                         ),
-                      ),
-                    ];
+
+                        const Gap(24),
+
+                        //////////////////////////////////////////////////
+                        /// RIGHT → ACTIONS
+                        //////////////////////////////////////////////////
+                        Expanded(
+                          flex: 1,
+                          child: _Card(child: DashboardQuickActions()),
+                        ),
+                      ],
+                    );
                   },
-
-                  ////////////////////////////////////////////////////////////
-                  /// MOBILE TAB CONTENT
-                  ////////////////////////////////////////////////////////////
-                  body: TabBarView(
-                    children: [
-                      _RefreshableTab(
-                        onRefresh: () => _refresh(ref),
-                        child: DashboardQuickActions(),
-                      ),
-
-                      _RefreshableTab(
-                        onRefresh: () => _refresh(ref),
-                        child: DashboardPipelineWidget(
-                          pipeline: dashboard.pipeline,
-                        ),
-                      ),
-
-                      _RefreshableTab(
-                        onRefresh: () => _refresh(ref),
-                        child: Column(
-                          children: [
-                            DashboardTrendsChart(trends: dashboard.trends),
-                            const Gap(24),
-                            AdminDistributionChart(
-                              distribution: dashboard.distribution,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      _RefreshableTab(
-                        onRefresh: () => _refresh(ref),
-                        child: DashboardLeaderboardsWidget(
-                          leaderboards: dashboard.leaderboards,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
 ////////////////////////////////////////////////////////////
-/// REFRESHABLE TAB
+/// CARD WRAPPER
 ////////////////////////////////////////////////////////////
 
-class _RefreshableTab extends StatelessWidget {
+class _Card extends StatelessWidget {
   final Widget child;
-  final Future<void> Function() onRefresh;
 
-  const _RefreshableTab({required this.child, required this.onRefresh});
+  const _Card({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: child.animate().fadeIn().slideY(begin: .1),
-      ),
-    );
-  }
-}
+    final theme = Theme.of(context);
 
-////////////////////////////////////////////////////////////
-/// TAB BAR DELEGATE
-////////////////////////////////////////////////////////////
-
-class _PremiumTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
-
-  const _PremiumTabBarDelegate(this.tabBar);
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
     return Container(
-      color: Theme.of(context).colorScheme.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      alignment: Alignment.centerLeft,
-      child: tabBar,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(.04), blurRadius: 10),
+        ],
+      ),
+      child: child,
     );
   }
-
-  @override
-  double get maxExtent => 52;
-
-  @override
-  double get minExtent => 52;
-
-  @override
-  bool shouldRebuild(_) => false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -311,7 +173,7 @@ class _DashboardError extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+          const Icon(Icons.error_outline, size: 48),
           const Gap(16),
           const Text("Failed to load dashboard"),
           const Gap(8),

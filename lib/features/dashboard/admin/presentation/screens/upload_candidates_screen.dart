@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/features/dashboard/admin/presentation/screens/upload_candidate_csv_screen.dart';
+import 'package:frontend/features/dashboard/admin/presentation/widgets/upload_history_panel.dart';
 import 'package:gap/gap.dart';
 import 'upload_resume_screen.dart';
 
@@ -60,7 +62,13 @@ class UploadCandidatesScreen extends StatelessWidget {
                                   "Bulk upload candidates using CSV file",
                               color: const Color(0xFF4F46E5),
                               onTap: () {
-                                // TODO: Navigate to CSV screen
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const UploadCandidateCsvScreen(),
+                                  ),
+                                );
                               },
                             ),
                           ),

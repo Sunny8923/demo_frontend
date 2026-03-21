@@ -67,4 +67,31 @@ class CandidateUploadRepository {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> uploadCsv(dynamic file) async {
+    try {
+      print("UPLOAD CSV API CALLED");
+      print("File name: ${file.name}");
+
+      final reader = html.FileReader();
+      reader.readAsArrayBuffer(file);
+      await reader.onLoad.first;
+
+      final bytes = reader.result as Uint8List;
+
+      final formData = FormData.fromMap({
+        "file": MultipartFile.fromBytes(bytes, filename: file.name),
+      });
+
+      final response = await _dio.post("/admin/csv/upload-csv", data: formData);
+
+      print("CSV RESPONSE: ${response.data}");
+
+      return response.data;
+    } on DioException catch (e) {
+      print("CSV UPLOAD FAILED");
+      print(e.response?.data);
+      rethrow;
+    }
+  }
 }

@@ -16,231 +16,138 @@ class DashboardSummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isWeb = width >= 900;
-
-    final grid = GridView(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 260,
-        mainAxisSpacing: 14,
-        crossAxisSpacing: 14,
-        childAspectRatio: 1.35,
-      ),
+    return Wrap(
+      spacing: 28,
+      runSpacing: 16,
       children: [
-        _card(
+        _item(
           context,
           "Applications",
-          summary.totalApplications.toString(),
+          summary.totalApplications,
           summaryChange.totalApplications,
           Icons.description_outlined,
-          ChartColors.primary,
         ),
-        _card(
+        _item(
           context,
           "Hires",
-          summary.hired.toString(),
+          summary.hired,
           summaryChange.hired,
           Icons.person_add_alt_outlined,
-          ChartColors.success,
         ),
-        _card(
+        _item(
           context,
           "Jobs",
-          summary.totalJobs.toString(),
+          summary.totalJobs,
           summaryChange.totalJobs,
           Icons.work_outline,
-          ChartColors.warning,
         ),
-        _card(
+        _item(
           context,
           "Partners",
-          summary.totalPartners.toString(),
+          summary.totalPartners,
           summaryChange.totalPartners,
           Icons.handshake_outlined,
-          ChartColors.violet,
         ),
-        _card(
+        _item(
           context,
           "Recruiters",
-          summary.totalRecruiters.toString(),
+          summary.totalRecruiters,
           summaryChange.totalRecruiters,
           Icons.groups_outlined,
-          ChartColors.cyan,
         ),
-        _card(
+        _item(
           context,
-          "Active Applications",
-          summary.activeApplications.toString(),
+          "Active",
+          summary.activeApplications,
           0,
           Icons.local_fire_department_outlined,
-          ChartColors.error,
           hideChange: true,
         ),
       ],
     );
-
-    if (!isWeb) return grid;
-
-    /// WEB WRAPPER CARD
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant.withOpacity(.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(.05),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: grid,
-    );
   }
 
   ////////////////////////////////////////////////////////////
-  /// FIXED CARD (NO OVERFLOW EVER)
+  /// COMPACT STAT ITEM
   ////////////////////////////////////////////////////////////
 
-  Widget _card(
+  Widget _item(
     BuildContext context,
     String title,
-    String value,
+    int value,
     double change,
-    IconData icon,
-    Color color, {
+    IconData icon, {
     bool hideChange = false,
   }) {
     final theme = Theme.of(context);
     final isPositive = change >= 0;
+    final changeColor = isPositive ? ChartColors.success : ChartColors.error;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [color.withOpacity(.18), color.withOpacity(.05)],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ////////////////////////////////////////////////////////////
+        /// ICON
+        ////////////////////////////////////////////////////////////
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18),
         ),
-        border: Border.all(color: color.withOpacity(.28)),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(.18),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ////////////////////////////////////////////////////////////
-          /// TOP ROW (SAFE)
-          ////////////////////////////////////////////////////////////
-          Row(
-            children: [
-              /// ICON
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(.22),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
+        const Gap(10),
 
-              const Spacer(),
-
-              /// CHANGE BADGE (SAFE WIDTH)
-              if (!hideChange)
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: _changeBadge(context, change, isPositive),
-                  ),
-                ),
-            ],
-          ),
-
-          const Spacer(),
-
-          ////////////////////////////////////////////////////////////
-          /// VALUE (SAFE)
-          ////////////////////////////////////////////////////////////
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                ),
+        ////////////////////////////////////////////////////////////
+        /// TEXT
+        ////////////////////////////////////////////////////////////
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-          ),
 
-          const Gap(4),
+            Row(
+              children: [
+                Text(
+                  value.toString(),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
 
-          ////////////////////////////////////////////////////////////
-          /// TITLE (SAFE)
-          ////////////////////////////////////////////////////////////
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    ).animate().fadeIn().scale(begin: const Offset(.96, .96));
-  }
-
-  ////////////////////////////////////////////////////////////
-  /// CHANGE BADGE (SAFE VERSION)
-  ////////////////////////////////////////////////////////////
-
-  Widget _changeBadge(BuildContext context, double change, bool isPositive) {
-    final color = isPositive ? ChartColors.success : ChartColors.error;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-
-      decoration: BoxDecoration(
-        color: color.withOpacity(.18),
-        borderRadius: BorderRadius.circular(20),
-      ),
-
-      child: Row(
-        mainAxisSize: MainAxisSize.min, // IMPORTANT FIX
-        children: [
-          Icon(
-            isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-            size: 14,
-            color: color,
-          ),
-          const Gap(4),
-          Text(
-            "${change.toStringAsFixed(1)}%",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: color, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
+                if (!hideChange) ...[
+                  const Gap(6),
+                  Row(
+                    children: [
+                      Icon(
+                        isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+                        size: 12,
+                        color: changeColor,
+                      ),
+                      const Gap(2),
+                      Text(
+                        "${change.toStringAsFixed(1)}%",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: changeColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ],
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: .2);
   }
 }
