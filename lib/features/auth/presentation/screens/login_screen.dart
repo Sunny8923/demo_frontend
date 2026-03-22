@@ -39,7 +39,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.read(authProvider);
 
     if (authState.hasError) {
-      _showError(authState.error.toString());
+      final error = authState.error.toString().toLowerCase();
+
+      String message = "Login failed. Please try again";
+
+      if (error.contains("401") ||
+          error.contains("unauthorized") ||
+          error.contains("invalid") ||
+          error.contains("credential")) {
+        message = "Invalid credentials";
+      } else if (error.contains("network") || error.contains("socket")) {
+        message = "Network error. Check your connection";
+      }
+
+      _showError(message);
       return;
     }
 
