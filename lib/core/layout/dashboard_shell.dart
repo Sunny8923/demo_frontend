@@ -9,10 +9,6 @@ class DashboardShell extends StatelessWidget {
 
   const DashboardShell({super.key, required this.child});
 
-  ////////////////////////////////////////////////////////////
-  /// 🔥 DYNAMIC TITLE BASED ON ROUTE
-  ////////////////////////////////////////////////////////////
-
   String _getTitle(BuildContext context) {
     final path = GoRouterState.of(context).uri.toString();
 
@@ -27,6 +23,8 @@ class DashboardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("🔥 DashboardShell BUILDING");
+
     return AppScaffold(title: _getTitle(context), body: child);
   }
 }

@@ -92,8 +92,8 @@ class _CreateSingleJobScreenState extends ConsumerState<CreateSingleJobScreen> {
   Widget build(BuildContext context) {
     final loading = ref.watch(createJobProvider).isLoading;
 
-    return AppScaffold(
-      title: "Create Job",
+    return Scaffold(
+      appBar: AppBar(title: const Text("Create Job")),
 
       body: Form(
         key: _formKey,

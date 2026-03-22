@@ -11,8 +11,8 @@ class AdminApplicationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(adminApplicationProvider);
 
-    return AppScaffold(
-      title: "Applications",
+    return Scaffold(
+      appBar: AppBar(title: const Text("Applications")),
 
       body: state.when(
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -15,8 +15,8 @@ class AdminJobsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(jobsProvider);
 
-    return AppScaffold(
-      title: "All Jobs",
+    return Scaffold(
+      appBar: AppBar(title: const Text("All Jobs")),
 
       body: state.when(
         loading: () => const _LoadingState(),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
 import '../providers/candidate_provider.dart';
-import '../../data/model/candidate_model.dart';
 import 'candidate_details_screen.dart';
 
 class ViewCandidatesScreen extends ConsumerWidget {
@@ -26,7 +25,7 @@ class ViewCandidatesScreen extends ConsumerWidget {
         child: Column(
           children: [
             ////////////////////////////////////////////////////////////
-            /// 🔥 FILTER BAR (BACKEND DRIVEN)
+            /// 🔥 FILTER BAR (FIXED)
             ////////////////////////////////////////////////////////////
             Container(
               padding: const EdgeInsets.all(16),
@@ -40,16 +39,19 @@ class ViewCandidatesScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: Row(
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   ////////////////////////////////////////////////////////////
                   /// SEARCH
                   ////////////////////////////////////////////////////////////
-                  Expanded(
-                    flex: 3,
+                  SizedBox(
+                    width: 220,
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: "Search candidates...",
+                        hintText: "Search name, email...",
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
                         fillColor: theme.colorScheme.surfaceVariant.withOpacity(
@@ -64,16 +66,36 @@ class ViewCandidatesScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  const Gap(12),
+                  ////////////////////////////////////////////////////////////
+                  /// MIN EXP
+                  ////////////////////////////////////////////////////////////
+                  _dropdown(
+                    context,
+                    hint: "Min Exp",
+                    value: state.minExperience,
+                    items: const [0, 1, 2, 5],
+                    onChanged: notifier.setMinExperience,
+                  ),
 
                   ////////////////////////////////////////////////////////////
-                  /// EXPERIENCE FILTER
+                  /// MAX EXP
                   ////////////////////////////////////////////////////////////
-                  Expanded(
-                    child: DropdownButtonFormField<double>(
-                      value: state.minExperience,
-                      hint: const Text("Min Exp"),
+                  _dropdown(
+                    context,
+                    hint: "Max Exp",
+                    value: state.maxExperience,
+                    items: const [1, 2, 5, 10],
+                    onChanged: notifier.setMaxExperience,
+                  ),
+
+                  ////////////////////////////////////////////////////////////
+                  /// LOCATION
+                  ////////////////////////////////////////////////////////////
+                  SizedBox(
+                    width: 140,
+                    child: TextField(
                       decoration: InputDecoration(
+                        hintText: "Location",
                         filled: true,
                         fillColor: theme.colorScheme.surfaceVariant.withOpacity(
                           .3,
@@ -83,22 +105,35 @@ class ViewCandidatesScreen extends ConsumerWidget {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      items: const [
-                        DropdownMenuItem(value: 0, child: Text("0+")),
-                        DropdownMenuItem(value: 1, child: Text("1+")),
-                        DropdownMenuItem(value: 2, child: Text("2+")),
-                        DropdownMenuItem(value: 5, child: Text("5+")),
-                      ],
-                      onChanged: notifier.setMinExperience,
+                      onSubmitted: notifier.setLocation,
                     ),
                   ),
 
-                  const Gap(12),
+                  ////////////////////////////////////////////////////////////
+                  /// SKILLS
+                  ////////////////////////////////////////////////////////////
+                  SizedBox(
+                    width: 140,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: "Skills",
+                        filled: true,
+                        fillColor: theme.colorScheme.surfaceVariant.withOpacity(
+                          .3,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onSubmitted: notifier.setSkills,
+                    ),
+                  ),
 
                   ////////////////////////////////////////////////////////////
                   /// RESET
                   ////////////////////////////////////////////////////////////
-                  ElevatedButton(
+                  OutlinedButton(
                     onPressed: notifier.reset,
                     child: const Text("Reset"),
                   ),
@@ -127,7 +162,7 @@ class ViewCandidatesScreen extends ConsumerWidget {
             const Gap(16),
 
             ////////////////////////////////////////////////////////////
-            /// TABLE CONTAINER
+            /// TABLE
             ////////////////////////////////////////////////////////////
             Expanded(
               child: Container(
@@ -219,7 +254,7 @@ class ViewCandidatesScreen extends ConsumerWidget {
                           ),
 
                           ////////////////////////////////////////////////////
-                          /// 🔥 PAGINATION CONTROLS
+                          /// PAGINATION
                           ////////////////////////////////////////////////////
                           Padding(
                             padding: const EdgeInsets.all(12),
@@ -254,6 +289,47 @@ class ViewCandidatesScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+////////////////////////////////////////////////////////////
+/// DROPDOWN (FIXED)
+////////////////////////////////////////////////////////////
+
+Widget _dropdown(
+  BuildContext context, {
+  required String hint,
+  required double? value,
+  required List<int> items,
+  required ValueChanged<double?> onChanged,
+}) {
+  return ConstrainedBox(
+    constraints: const BoxConstraints(minWidth: 100, maxWidth: 130),
+    child: DropdownButtonFormField<double>(
+      isExpanded: true, // 🔥 FIX
+
+      value: value,
+      hint: Text(hint, overflow: TextOverflow.ellipsis),
+
+      items: items
+          .map((e) => DropdownMenuItem(value: e.toDouble(), child: Text("$e+")))
+          .toList(),
+
+      onChanged: onChanged,
+
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
+        ),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surfaceVariant.withOpacity(.3),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    ),
+  );
 }
 
 ////////////////////////////////////////////////////////////

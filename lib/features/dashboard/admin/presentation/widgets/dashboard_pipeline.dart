@@ -37,7 +37,6 @@ class DashboardPipelineWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
-
       decoration: BoxDecoration(
         color: const Color(0xff111827),
         borderRadius: BorderRadius.circular(16),
@@ -46,6 +45,9 @@ class DashboardPipelineWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ////////////////////////////////////////////////////////////
+          /// TITLE
+          ////////////////////////////////////////////////////////////
           const Text(
             "Recruitment Pipeline",
             style: TextStyle(
@@ -58,50 +60,27 @@ class DashboardPipelineWidget extends StatelessWidget {
           const Gap(16),
 
           ////////////////////////////////////////////////////////////
-          /// STAGE TILES
+          /// HORIZONTAL PIPELINE (FIXED)
           ////////////////////////////////////////////////////////////
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isDesktop = constraints.maxWidth > 700;
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: stages.map((stage) {
+                final count = pipeline.stages[stage.key] ?? 0;
 
-              if (!isDesktop) {
-                // mobile layout (your current vertical list)
-                return Column(
-                  children: stages.map((stage) {
-                    final count = pipeline.stages[stage.key] ?? 0;
+                return Container(
+                  width: 160, // ✅ fixed width
+                  margin: const EdgeInsets.only(right: 12),
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _StageTile(
-                        label: stage.label,
-                        count: count,
-                        icon: stage.icon,
-                        color: stage.color,
-                      ),
-                    );
-                  }).toList(),
+                  child: _StageTile(
+                    label: stage.label,
+                    count: count,
+                    icon: stage.icon,
+                    color: stage.color,
+                  ),
                 );
-              }
-
-              // desktop layout (horizontal pipeline)
-              return Row(
-                children: stages.map((stage) {
-                  final count = pipeline.stages[stage.key] ?? 0;
-
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: _StageTile(
-                        label: stage.label,
-                        count: count,
-                        icon: stage.icon,
-                        color: stage.color,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              );
-            },
+              }).toList(),
+            ),
           ),
         ],
       ),
@@ -129,8 +108,7 @@ class _StageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
-
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xff1F2937),
         borderRadius: BorderRadius.circular(12),
@@ -142,17 +120,15 @@ class _StageTile extends StatelessWidget {
           /// ICON
           ////////////////////////////////////////////////////////////
           Container(
-            padding: const EdgeInsets.all(10),
-
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: color.withOpacity(.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
-
-            child: Icon(icon, color: color),
+            child: Icon(icon, color: color, size: 18),
           ),
 
-          const Gap(16),
+          const Gap(10),
 
           ////////////////////////////////////////////////////////////
           /// LABEL
@@ -160,13 +136,17 @@ class _StageTile extends StatelessWidget {
           Expanded(
             child: Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 13,
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
+
+          const Gap(6),
 
           ////////////////////////////////////////////////////////////
           /// COUNT
@@ -174,7 +154,7 @@ class _StageTile extends StatelessWidget {
           Text(
             count.toString(),
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: color,
             ),

@@ -6,6 +6,10 @@ class AppSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(width: 260, child: AppDrawer());
+    return const SizedBox(
+      width: 260,
+      height: double.infinity, // 🔥 THIS IS REQUIRED
+      child: AppDrawer(),
+    );
   }
 }

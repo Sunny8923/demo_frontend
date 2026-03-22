@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:frontend/features/dashboard/admin/presentation/widgets/dashboard_pipeline.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../auth/presentation/providers/current_user_provider.dart';
@@ -11,6 +12,8 @@ import '../widgets/dashboard_summary_cards.dart';
 import '../widgets/dashboard_trends_chart.dart';
 import '../widgets/dashboard_quick_actions.dart';
 import '../widgets/resume_job_banner.dart';
+import '../widgets/dashboard_distribution_chart.dart';
+import '../widgets/dashboard_leaderboards.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -24,10 +27,6 @@ class AdminDashboardScreen extends ConsumerWidget {
     final dashboardState = ref.watch(adminDashboardProvider);
     final currentUser = ref.watch(currentUserProvider).value;
 
-    ////////////////////////////////////////////////////////////
-    /// ❌ REMOVED AppScaffold (IMPORTANT)
-    ////////////////////////////////////////////////////////////
-
     return dashboardState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
 
@@ -37,93 +36,177 @@ class AdminDashboardScreen extends ConsumerWidget {
       ),
 
       data: (dashboard) {
-        return RefreshIndicator(
-          onRefresh: () => _refresh(ref),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth > 900;
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ////////////////////////////////////////////////////
-                /// HEADER
-                ////////////////////////////////////////////////////
-                DashboardHeader(
-                  adminName: currentUser?.name ?? "Admin",
-                ).animate().fadeIn().slideY(begin: .2),
+            return RefreshIndicator(
+              onRefresh: () => _refresh(ref),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
 
-                const Gap(16),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
 
-                ////////////////////////////////////////////////////
-                /// BANNER
-                ////////////////////////////////////////////////////
-                const ResumeJobBanner(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
 
-                const Gap(24),
-
-                ////////////////////////////////////////////////////
-                /// SUMMARY
-                ////////////////////////////////////////////////////
-                DashboardSummaryCards(
-                  summary: dashboard.summary,
-                  summaryChange: dashboard.summaryChange,
-                ).animate().fadeIn(delay: 100.ms),
-
-                const Gap(24),
-
-                ////////////////////////////////////////////////////
-                /// MAIN GRID (CLEAN)
-                ////////////////////////////////////////////////////
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isDesktop = constraints.maxWidth > 900;
-
-                    if (!isDesktop) {
-                      return Column(
-                        children: [
-                          _Card(child: DashboardQuickActions()),
-                          const Gap(16),
-                          _Card(
-                            child: DashboardTrendsChart(
-                              trends: dashboard.trends,
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-
-                    return Row(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        //////////////////////////////////////////////////
-                        /// LEFT → MAIN CHART
-                        //////////////////////////////////////////////////
-                        Expanded(
-                          flex: 2,
-                          child: _Card(
-                            child: DashboardTrendsChart(
-                              trends: dashboard.trends,
-                            ),
-                          ),
-                        ),
+                        ////////////////////////////////////////////////////
+                        /// HEADER
+                        ////////////////////////////////////////////////////
+                        DashboardHeader(
+                          adminName: currentUser?.name ?? "Admin",
+                        ).animate().fadeIn().slideY(begin: .2),
+
+                        const Gap(16),
+
+                        ////////////////////////////////////////////////////
+                        /// SUMMARY
+                        ////////////////////////////////////////////////////
+                        DashboardSummaryCards(
+                          summary: dashboard.summary,
+                          summaryChange: dashboard.summaryChange,
+                        ).animate().fadeIn(delay: 100.ms),
 
                         const Gap(24),
 
-                        //////////////////////////////////////////////////
-                        /// RIGHT → ACTIONS
-                        //////////////////////////////////////////////////
-                        Expanded(
-                          flex: 1,
-                          child: _Card(child: DashboardQuickActions()),
+                        ////////////////////////////////////////////////////
+                        /// MAIN GRID
+                        ////////////////////////////////////////////////////
+                        if (!isDesktop)
+                          Column(
+                            children: [
+                              _Card(
+                                child: DashboardTrendsChart(
+                                  trends: dashboard.trends,
+                                ),
+                              ),
+                              const Gap(16),
+
+                              _Card(
+                                child: DashboardPipelineWidget(
+                                  pipeline: dashboard.pipeline,
+                                ),
+                              ),
+                              const Gap(16),
+
+                              _Card(child: DashboardQuickActions()),
+                              const Gap(16),
+
+                              const ResumeJobBanner(),
+                            ],
+                          )
+                        else
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              //////////////////////////////////////////////////
+                              /// LEFT SIDE
+                              //////////////////////////////////////////////////
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  children: [
+                                    _Card(
+                                      child: DashboardTrendsChart(
+                                        trends: dashboard.trends,
+                                      ),
+                                    ),
+                                    const Gap(16),
+
+                                    _Card(
+                                      child: DashboardPipelineWidget(
+                                        pipeline: dashboard.pipeline,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const Gap(24),
+
+                              //////////////////////////////////////////////////
+                              /// RIGHT SIDE
+                              //////////////////////////////////////////////////
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    _Card(child: DashboardQuickActions()),
+                                    const Gap(16),
+
+                                    const ResumeJobBanner(),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                        ////////////////////////////////////////////////////
+                        /// ANALYTICS SECTION (NEW)
+                        ////////////////////////////////////////////////////
+                        const Gap(24),
+
+                        const Text(
+                          "Analytics Overview",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
                         ),
+
+                        const Gap(12),
+
+                        if (!isDesktop)
+                          Column(
+                            children: [
+                              _Card(
+                                child: AdminDistributionChart(
+                                  distribution: dashboard.distribution,
+                                ),
+                              ),
+                              const Gap(16),
+
+                              _Card(
+                                child: DashboardLeaderboardsWidget(
+                                  leaderboards: dashboard.leaderboards,
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: _Card(
+                                  child: AdminDistributionChart(
+                                    distribution: dashboard.distribution,
+                                  ),
+                                ),
+                              ),
+
+                              const Gap(24),
+
+                              Expanded(
+                                child: _Card(
+                                  child: DashboardLeaderboardsWidget(
+                                    leaderboards: dashboard.leaderboards,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
-                    );
-                  },
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -144,6 +227,7 @@ class _Card extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,

@@ -14,12 +14,11 @@ class UploadCandidatesScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-
       appBar: AppBar(title: const Text("Upload Candidates"), elevation: 0),
 
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
+          constraints: const BoxConstraints(maxWidth: 1000),
 
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -115,6 +114,22 @@ class UploadCandidatesScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+
+                const Gap(32),
+
+                ////////////////////////////////////////////////////////////
+                /// HISTORY SECTION (NEW)
+                ////////////////////////////////////////////////////////////
+                Text(
+                  "Recent Uploads",
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const Gap(12),
+
+                const UploadHistoryPanel(),
               ],
             ),
           ),

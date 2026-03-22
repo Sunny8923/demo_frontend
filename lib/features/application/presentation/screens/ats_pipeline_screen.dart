@@ -23,8 +23,8 @@ class AtsPipelineScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(adminApplicationProvider);
 
-    return AppScaffold(
-      title: "ATS Pipeline",
+    return Scaffold(
+      appBar: AppBar(title: const Text("ATS pipeline")),
 
       body: state.when(
         loading: () => const Center(child: CircularProgressIndicator()),

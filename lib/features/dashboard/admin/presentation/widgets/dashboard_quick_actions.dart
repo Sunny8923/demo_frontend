@@ -235,12 +235,14 @@ class DashboardQuickActions extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CreateSingleJobScreen(),
-                    ),
-                  );
+                  Future.microtask(() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CreateSingleJobScreen(),
+                      ),
+                    );
+                  });
                 },
               ),
 
@@ -253,10 +255,14 @@ class DashboardQuickActions extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const UploadCsvScreen()),
-                  );
+                  Future.microtask(() {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UploadCsvScreen(),
+                      ),
+                    );
+                  });
                 },
               ),
             ],
@@ -303,56 +309,60 @@ class _ActionCardState extends State<_ActionCard> {
         duration: const Duration(milliseconds: 150),
         scale: hovered ? 1.03 : 1,
 
-        child: InkWell(
-          onTap: widget.onTap,
+        ////////////////////////////////////////////////////////////
+        /// ✅ FIX: MATERIAL + INKWELL (MANDATORY PAIR)
+        ////////////////////////////////////////////////////////////
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(16),
 
-          child: Ink(
-            decoration: BoxDecoration(
-              color: theme.cardColor,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(16),
 
-              borderRadius: BorderRadius.circular(16),
-
-              border: Border.all(
-                color: hovered
-                    ? widget.color.withOpacity(.35)
-                    : Colors.grey.withOpacity(.08),
+            child: Ink(
+              // ✅ USE INK WITH MATERIAL (correct combo)
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: hovered
+                      ? widget.color.withOpacity(.35)
+                      : Colors.grey.withOpacity(.08),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: hovered
+                        ? widget.color.withOpacity(.15)
+                        : Colors.black.withOpacity(.04),
+                    blurRadius: hovered ? 16 : 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
 
-              boxShadow: [
-                BoxShadow(
-                  color: hovered
-                      ? widget.color.withOpacity(.15)
-                      : Colors.black.withOpacity(.04),
-                  blurRadius: hovered ? 16 : 10,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-
-                  decoration: BoxDecoration(
-                    color: widget.color.withOpacity(.12),
-                    borderRadius: BorderRadius.circular(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: widget.color.withOpacity(.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(widget.icon, color: widget.color, size: 24),
                   ),
 
-                  child: Icon(widget.icon, color: widget.color, size: 24),
-                ),
+                  const Gap(10),
 
-                const Gap(10),
-
-                Text(
-                  widget.label,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  Text(
+                    widget.label,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -121,51 +121,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-
-          const SizedBox(height: 24),
-
-          ////////////////////////////////////////////////////////////
-          /// PREVIEW SECTION
-          ////////////////////////////////////////////////////////////
-          Text(
-            "Preview",
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text("Elevated Button"),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  OutlinedButton(
-                    onPressed: () {},
-                    child: const Text("Outlined Button"),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  TextField(
-                    decoration: const InputDecoration(
-                      labelText: "Input field preview",
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );

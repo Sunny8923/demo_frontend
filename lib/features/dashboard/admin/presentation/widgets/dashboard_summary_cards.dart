@@ -17,45 +17,50 @@ class DashboardSummaryCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 28,
+      spacing: 16, // tighter
       runSpacing: 16,
       children: [
-        _item(
+        _card(
           context,
           "Applications",
           summary.totalApplications,
           summaryChange.totalApplications,
           Icons.description_outlined,
         ),
-        _item(
+
+        _card(
           context,
           "Hires",
           summary.hired,
           summaryChange.hired,
           Icons.person_add_alt_outlined,
         ),
-        _item(
+
+        _card(
           context,
           "Jobs",
           summary.totalJobs,
           summaryChange.totalJobs,
           Icons.work_outline,
         ),
-        _item(
+
+        _card(
           context,
           "Partners",
           summary.totalPartners,
           summaryChange.totalPartners,
           Icons.handshake_outlined,
         ),
-        _item(
+
+        _card(
           context,
           "Recruiters",
           summary.totalRecruiters,
           summaryChange.totalRecruiters,
           Icons.groups_outlined,
         ),
-        _item(
+
+        _card(
           context,
           "Active",
           summary.activeApplications,
@@ -68,10 +73,10 @@ class DashboardSummaryCards extends StatelessWidget {
   }
 
   ////////////////////////////////////////////////////////////
-  /// COMPACT STAT ITEM
+  /// CARD UI
   ////////////////////////////////////////////////////////////
 
-  Widget _item(
+  Widget _card(
     BuildContext context,
     String title,
     int value,
@@ -80,74 +85,91 @@ class DashboardSummaryCards extends StatelessWidget {
     bool hideChange = false,
   }) {
     final theme = Theme.of(context);
+
     final isPositive = change >= 0;
     final changeColor = isPositive ? ChartColors.success : ChartColors.error;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ////////////////////////////////////////////////////////////
-        /// ICON
-        ////////////////////////////////////////////////////////////
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, size: 18),
+    return Container(
+      width: 180, // 🔥 fixed card width (important)
+      padding: const EdgeInsets.all(14),
+
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(.3),
         ),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(.04), blurRadius: 10),
+        ],
+      ),
 
-        const Gap(10),
-
-        ////////////////////////////////////////////////////////////
-        /// TEXT
-        ////////////////////////////////////////////////////////////
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-
-            Row(
-              children: [
-                Text(
-                  value.toString(),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ////////////////////////////////////////////////////////////
+          /// TOP ROW (ICON + LABEL)
+          ////////////////////////////////////////////////////////////
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Icon(icon, size: 16, color: theme.colorScheme.primary),
+              ),
 
-                if (!hideChange) ...[
-                  const Gap(6),
-                  Row(
-                    children: [
-                      Icon(
-                        isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                        size: 12,
+              const Spacer(),
+
+              if (!hideChange)
+                Row(
+                  children: [
+                    Icon(
+                      isPositive ? Icons.arrow_upward : Icons.arrow_downward,
+                      size: 12,
+                      color: changeColor,
+                    ),
+                    const Gap(2),
+                    Text(
+                      "${change.toStringAsFixed(1)}%",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                         color: changeColor,
                       ),
-                      const Gap(2),
-                      Text(
-                        "${change.toStringAsFixed(1)}%",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: changeColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
+                    ),
+                  ],
+                ),
+            ],
+          ),
+
+          const Gap(12),
+
+          ////////////////////////////////////////////////////////////
+          /// VALUE
+          ////////////////////////////////////////////////////////////
+          Text(
+            value.toString(),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
             ),
-          ],
-        ),
-      ],
+          ),
+
+          const Gap(4),
+
+          ////////////////////////////////////////////////////////////
+          /// LABEL
+          ////////////////////////////////////////////////////////////
+          Text(
+            title,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     ).animate().fadeIn(duration: 300.ms).slideY(begin: .2);
   }
 }

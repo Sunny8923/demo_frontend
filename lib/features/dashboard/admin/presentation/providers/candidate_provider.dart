@@ -21,6 +21,9 @@ class CandidateState {
 
   final String search;
   final double? minExperience;
+  final double? maxExperience;
+  final String? location;
+  final String? skills;
 
   CandidateState({
     this.candidates = const [],
@@ -30,6 +33,9 @@ class CandidateState {
     this.loading = false,
     this.search = "",
     this.minExperience,
+    this.maxExperience,
+    this.location,
+    this.skills,
   });
 
   CandidateState copyWith({
@@ -40,6 +46,9 @@ class CandidateState {
     bool? loading,
     String? search,
     double? minExperience,
+    double? maxExperience,
+    String? location,
+    String? skills,
   }) {
     return CandidateState(
       candidates: candidates ?? this.candidates,
@@ -49,17 +58,12 @@ class CandidateState {
       loading: loading ?? this.loading,
       search: search ?? this.search,
       minExperience: minExperience ?? this.minExperience,
+      maxExperience: maxExperience ?? this.maxExperience,
+      location: location ?? this.location,
+      skills: skills ?? this.skills,
     );
   }
 }
-
-////////////////////////////////////////////////////////////
-/// PROVIDER
-////////////////////////////////////////////////////////////
-
-final candidateProvider = NotifierProvider<CandidateNotifier, CandidateState>(
-  CandidateNotifier.new,
-);
 
 ////////////////////////////////////////////////////////////
 /// NOTIFIER
@@ -70,14 +74,9 @@ class CandidateNotifier extends Notifier<CandidateState> {
 
   @override
   CandidateState build() {
-    // initial load
     Future.microtask(() => loadCandidates());
     return CandidateState();
   }
-
-  ////////////////////////////////////////////////////////////
-  /// LOAD DATA (CORE FUNCTION)
-  ////////////////////////////////////////////////////////////
 
   Future<void> loadCandidates({int? page}) async {
     state = state.copyWith(loading: true);
@@ -86,6 +85,9 @@ class CandidateNotifier extends Notifier<CandidateState> {
       final res = await _repo.getCandidates(
         search: state.search,
         minExperience: state.minExperience,
+        maxExperience: state.maxExperience,
+        location: state.location,
+        skills: state.skills,
         page: page ?? state.page,
       );
 
@@ -119,6 +121,21 @@ class CandidateNotifier extends Notifier<CandidateState> {
     loadCandidates(page: 1);
   }
 
+  void setMaxExperience(double? value) {
+    state = state.copyWith(maxExperience: value, page: 1);
+    loadCandidates(page: 1);
+  }
+
+  void setLocation(String value) {
+    state = state.copyWith(location: value, page: 1);
+    loadCandidates(page: 1);
+  }
+
+  void setSkills(String value) {
+    state = state.copyWith(skills: value, page: 1);
+    loadCandidates(page: 1);
+  }
+
   ////////////////////////////////////////////////////////////
   /// PAGINATION
   ////////////////////////////////////////////////////////////
@@ -144,3 +161,8 @@ class CandidateNotifier extends Notifier<CandidateState> {
     loadCandidates(page: 1);
   }
 }
+
+/// 👇 ADD HERE
+final candidateProvider = NotifierProvider<CandidateNotifier, CandidateState>(
+  CandidateNotifier.new,
+);

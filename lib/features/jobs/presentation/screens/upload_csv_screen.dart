@@ -102,8 +102,8 @@ class _UploadCsvScreenState extends ConsumerState<UploadCsvScreen> {
     final loading = state.isLoading;
     final result = state.value;
 
-    return AppScaffold(
-      title: "Upload Jobs CSV",
+    return Scaffold(
+      appBar: AppBar(title: const Text("Upload Job Csv")),
 
       body: ListView(
         children: [

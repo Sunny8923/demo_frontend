@@ -54,8 +54,6 @@ class AppDrawer extends ConsumerStatefulWidget {
 }
 
 class _AppDrawerState extends ConsumerState<AppDrawer> {
-  DrawerRoute activeRoute = DrawerRoute.dashboard;
-
   ////////////////////////////////////////////////////////////
   /// ROLE MENU BUILDER
   ////////////////////////////////////////////////////////////
@@ -228,9 +226,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
       Navigator.pop(context);
     }
 
-    setState(() {
-      activeRoute = item.route;
-    });
+    final currentPath = GoRouterState.of(context).uri.path;
+
+    if (currentPath == _getPathFromRoute(item.route)) return;
 
     switch (item.route) {
       ////////////////////////////////////////////////////////////
@@ -315,7 +313,67 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
         if (!mounted) return;
 
         context.go(AppRoutes.login);
-        break;
+
+        return; // 🔥 add this
+    }
+  }
+
+  bool _isActive(DrawerRoute route, String path) {
+    switch (route) {
+      case DrawerRoute.dashboard:
+        return path.startsWith(AppRoutes.dashboard);
+
+      case DrawerRoute.jobs:
+        return path.startsWith(AppRoutes.jobs);
+
+      case DrawerRoute.candidates:
+        return path.startsWith(AppRoutes.candidates);
+
+      case DrawerRoute.applications:
+        return path.startsWith(AppRoutes.applications);
+
+      case DrawerRoute.partners:
+        return path.startsWith(AppRoutes.partners);
+
+      case DrawerRoute.recruiters:
+        return path.startsWith(AppRoutes.recruiters);
+
+      case DrawerRoute.analytics:
+        return path.startsWith(AppRoutes.analytics);
+
+      case DrawerRoute.profile:
+        return path.startsWith(AppRoutes.profile);
+
+      case DrawerRoute.settings:
+        return path.startsWith(AppRoutes.settings);
+
+      case DrawerRoute.logout:
+        return false;
+    }
+  }
+
+  String _getPathFromRoute(DrawerRoute route) {
+    switch (route) {
+      case DrawerRoute.dashboard:
+        return AppRoutes.dashboard;
+      case DrawerRoute.jobs:
+        return AppRoutes.jobs;
+      case DrawerRoute.applications:
+        return AppRoutes.applications;
+      case DrawerRoute.candidates:
+        return AppRoutes.candidates;
+      case DrawerRoute.partners:
+        return AppRoutes.partners;
+      case DrawerRoute.recruiters:
+        return AppRoutes.recruiters;
+      case DrawerRoute.analytics:
+        return AppRoutes.analytics;
+      case DrawerRoute.profile:
+        return AppRoutes.profile;
+      case DrawerRoute.settings:
+        return AppRoutes.settings;
+      case DrawerRoute.logout:
+        return "";
     }
   }
 
@@ -326,57 +384,56 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider).value;
+    final currentPath = GoRouterState.of(context).uri.path;
 
     final scheme = Theme.of(context).colorScheme;
-
-    final name = user?.name ?? "User";
-    final email = user?.email ?? "";
     final role = user?.role ?? "USER";
 
     final items = _menu(role);
 
-    return Drawer(
-      backgroundColor: scheme.surface,
+    return Material(
+      color: scheme.surface,
+      child: SizedBox(
+        width: 260,
+        child: SafeArea(
+          child: Column(
+            children: [
+              _DesktopSidebarHeader(),
 
-      child: Column(
-        children: [
-          if (MediaQuery.of(context).size.width < 1100)
-            _Header(name: name, email: email, role: role)
-          else
-            _DesktopSidebarHeader(),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
 
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    const Gap(12),
 
-              children: [
-                const Gap(12),
+                    for (final item in items)
+                      _DrawerItem(
+                        item: item,
+                        active: _isActive(item.route, currentPath),
+                        onTap: () => _handleNavigation(item),
+                      ),
 
-                for (final item in items)
-                  _DrawerItem(
-                    item: item,
-                    active: item.route == activeRoute,
-                    onTap: () => _handleNavigation(item),
-                  ),
+                    const Gap(16),
 
-                const Gap(16),
+                    Divider(color: scheme.outlineVariant),
 
-                Divider(color: scheme.outlineVariant),
+                    const Gap(8),
 
-                const Gap(8),
+                    Center(
+                      child: Text(
+                        "Version 1.0.0",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ),
 
-                Center(
-                  child: Text(
-                    "Version 1.0.0",
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
+                    const Gap(12),
+                  ],
                 ),
-
-                const Gap(12),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -478,7 +535,7 @@ class _DesktopSidebarHeader extends StatelessWidget {
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
-        "Admin Panel",
+        "control Panel",
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -536,28 +593,35 @@ class _DrawerItemState extends State<_DrawerItem> {
         borderRadius: BorderRadius.circular(14),
       ),
 
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => hover = true),
+        onExit: (_) => setState(() => hover = false),
 
-        onTap: widget.onTap,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
 
-        child: Padding(
-          padding: const EdgeInsets.all(12),
+          onTap: widget.onTap,
 
-          child: Row(
-            children: [
-              Icon(widget.item.icon, color: color),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
 
-              const Gap(14),
+            child: Row(
+              children: [
+                Icon(widget.item.icon, color: color),
 
-              Text(
-                widget.item.title,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: widget.active ? FontWeight.bold : FontWeight.w500,
+                const Gap(14),
+
+                Text(
+                  widget.item.title,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: widget.active
+                        ? FontWeight.bold
+                        : FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

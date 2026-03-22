@@ -11,8 +11,8 @@ class PendingPartnerScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(pendingPartnerProvider);
 
-    return AppScaffold(
-      title: "Partner Approvals",
+    return Scaffold(
+      appBar: AppBar(title: const Text("Partner Approvals")),
 
       body: state.when(
         loading: () => const _LoadingState(),
