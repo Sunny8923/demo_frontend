@@ -18,17 +18,16 @@ class ViewCandidatesScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(title: const Text("Candidates")),
 
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(10),
         child: Column(
           children: [
             ////////////////////////////////////////////////////////////
-            /// 🔥 FILTER BAR (FIXED)
+            /// 🔥 FILTER BAR (COMPACT + BACK BUTTON)
             ////////////////////////////////////////////////////////////
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
@@ -39,109 +38,119 @@ class ViewCandidatesScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                crossAxisAlignment: WrapCrossAlignment.center,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ////////////////////////////////////////////////////////////
-                  /// SEARCH
+                  /// BACK BUTTON (LEFT FIXED)
                   ////////////////////////////////////////////////////////////
-                  SizedBox(
-                    width: 220,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "Search name, email...",
-                        prefixIcon: const Icon(Icons.search),
-                        filled: true,
-                        fillColor: theme.colorScheme.surfaceVariant.withOpacity(
-                          .3,
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+
+                  const SizedBox(width: 40),
+
+                  ////////////////////////////////////////////////////////////
+                  /// FILTERS (WRAP TAKES REST SPACE)
+                  ////////////////////////////////////////////////////////////
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        SizedBox(
+                          width: 200,
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: "Search...",
+                              prefixIcon: const Icon(Icons.search),
+                              filled: true,
+                              fillColor: theme.colorScheme.surfaceVariant
+                                  .withOpacity(.3),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onChanged: notifier.setSearch,
+                          ),
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+
+                        _dropdown(
+                          context,
+                          hint: "Min Exp",
+                          value: state.minExperience,
+                          items: const [0, 1, 2, 5],
+                          onChanged: notifier.setMinExperience,
                         ),
-                      ),
-                      onChanged: notifier.setSearch,
+
+                        _dropdown(
+                          context,
+                          hint: "Max Exp",
+                          value: state.maxExperience,
+                          items: const [1, 2, 5, 10],
+                          onChanged: notifier.setMaxExperience,
+                        ),
+
+                        SizedBox(
+                          width: 120,
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: "Location",
+                              filled: true,
+                              fillColor: theme.colorScheme.surfaceVariant
+                                  .withOpacity(.3),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onSubmitted: notifier.setLocation,
+                          ),
+                        ),
+
+                        SizedBox(
+                          width: 120,
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: "Skills",
+                              filled: true,
+                              fillColor: theme.colorScheme.surfaceVariant
+                                  .withOpacity(.3),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onSubmitted: notifier.setSkills,
+                          ),
+                        ),
+
+                        OutlinedButton(
+                          onPressed: notifier.reset,
+                          child: const Text("Reset"),
+                        ),
+                      ],
                     ),
-                  ),
-
-                  ////////////////////////////////////////////////////////////
-                  /// MIN EXP
-                  ////////////////////////////////////////////////////////////
-                  _dropdown(
-                    context,
-                    hint: "Min Exp",
-                    value: state.minExperience,
-                    items: const [0, 1, 2, 5],
-                    onChanged: notifier.setMinExperience,
-                  ),
-
-                  ////////////////////////////////////////////////////////////
-                  /// MAX EXP
-                  ////////////////////////////////////////////////////////////
-                  _dropdown(
-                    context,
-                    hint: "Max Exp",
-                    value: state.maxExperience,
-                    items: const [1, 2, 5, 10],
-                    onChanged: notifier.setMaxExperience,
-                  ),
-
-                  ////////////////////////////////////////////////////////////
-                  /// LOCATION
-                  ////////////////////////////////////////////////////////////
-                  SizedBox(
-                    width: 140,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "Location",
-                        filled: true,
-                        fillColor: theme.colorScheme.surfaceVariant.withOpacity(
-                          .3,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      onSubmitted: notifier.setLocation,
-                    ),
-                  ),
-
-                  ////////////////////////////////////////////////////////////
-                  /// SKILLS
-                  ////////////////////////////////////////////////////////////
-                  SizedBox(
-                    width: 140,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "Skills",
-                        filled: true,
-                        fillColor: theme.colorScheme.surfaceVariant.withOpacity(
-                          .3,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      onSubmitted: notifier.setSkills,
-                    ),
-                  ),
-
-                  ////////////////////////////////////////////////////////////
-                  /// RESET
-                  ////////////////////////////////////////////////////////////
-                  OutlinedButton(
-                    onPressed: notifier.reset,
-                    child: const Text("Reset"),
                   ),
                 ],
               ),
             ),
 
-            const Gap(20),
+            const Gap(10),
 
             ////////////////////////////////////////////////////////////
             /// HEADER
@@ -151,7 +160,7 @@ class ViewCandidatesScreen extends ConsumerWidget {
               children: [
                 Text(
                   "Candidates",
-                  style: theme.textTheme.headlineSmall?.copyWith(
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -159,7 +168,7 @@ class ViewCandidatesScreen extends ConsumerWidget {
               ],
             ),
 
-            const Gap(16),
+            const Gap(8),
 
             ////////////////////////////////////////////////////////////
             /// TABLE
@@ -181,7 +190,10 @@ class ViewCandidatesScreen extends ConsumerWidget {
                           /// HEADER
                           ////////////////////////////////////////////////////
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
@@ -201,7 +213,7 @@ class ViewCandidatesScreen extends ConsumerWidget {
                           ),
 
                           ////////////////////////////////////////////////////
-                          /// LIST
+                          /// LIST (MAX HEIGHT NOW)
                           ////////////////////////////////////////////////////
                           Expanded(
                             child: ListView.builder(
@@ -221,7 +233,10 @@ class ViewCandidatesScreen extends ConsumerWidget {
                                     );
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
                                     decoration: BoxDecoration(
                                       border: Border(
                                         bottom: BorderSide(
@@ -252,36 +267,32 @@ class ViewCandidatesScreen extends ConsumerWidget {
                               },
                             ),
                           ),
-
-                          ////////////////////////////////////////////////////
-                          /// PAGINATION
-                          ////////////////////////////////////////////////////
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  "Page ${state.page} of ${state.totalPages}",
-                                ),
-                                const Gap(12),
-                                IconButton(
-                                  onPressed: state.page > 1
-                                      ? notifier.prevPage
-                                      : null,
-                                  icon: const Icon(Icons.chevron_left),
-                                ),
-                                IconButton(
-                                  onPressed: state.page < state.totalPages
-                                      ? notifier.nextPage
-                                      : null,
-                                  icon: const Icon(Icons.chevron_right),
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
+              ),
+            ),
+
+            ////////////////////////////////////////////////////////////
+            /// PAGINATION (MOVED OUTSIDE 🔥)
+            ////////////////////////////////////////////////////////////
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text("Page ${state.page} of ${state.totalPages}"),
+                  const Gap(8),
+                  IconButton(
+                    onPressed: state.page > 1 ? notifier.prevPage : null,
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  IconButton(
+                    onPressed: state.page < state.totalPages
+                        ? notifier.nextPage
+                        : null,
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                ],
               ),
             ),
           ],

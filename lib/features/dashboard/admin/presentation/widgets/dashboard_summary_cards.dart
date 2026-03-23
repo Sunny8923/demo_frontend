@@ -16,51 +16,54 @@ class DashboardSummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 16, // tighter
-      runSpacing: 16,
+    return Row(
       children: [
-        _card(
+        _cardFlexible(
           context,
           "Applications",
           summary.totalApplications,
           summaryChange.totalApplications,
           Icons.description_outlined,
         ),
+        _gap(),
 
-        _card(
+        _cardFlexible(
           context,
           "Hires",
           summary.hired,
           summaryChange.hired,
           Icons.person_add_alt_outlined,
         ),
+        _gap(),
 
-        _card(
+        _cardFlexible(
           context,
           "Jobs",
           summary.totalJobs,
           summaryChange.totalJobs,
           Icons.work_outline,
         ),
+        _gap(),
 
-        _card(
+        _cardFlexible(
           context,
           "Partners",
           summary.totalPartners,
           summaryChange.totalPartners,
           Icons.handshake_outlined,
         ),
+        _gap(),
 
-        _card(
+        _cardFlexible(
           context,
           "Recruiters",
           summary.totalRecruiters,
           summaryChange.totalRecruiters,
           Icons.groups_outlined,
         ),
+        _gap(),
 
-        _card(
+        _cardFlexible(
           context,
           "Active",
           summary.activeApplications,
@@ -69,6 +72,27 @@ class DashboardSummaryCards extends StatelessWidget {
           hideChange: true,
         ),
       ],
+    );
+  }
+
+  ////////////////////////////////////////////////////////////
+  /// GAP
+  ////////////////////////////////////////////////////////////
+  Widget _gap() => const SizedBox(width: 8);
+
+  ////////////////////////////////////////////////////////////
+  /// FLEXIBLE CARD WRAPPER
+  ////////////////////////////////////////////////////////////
+  Widget _cardFlexible(
+    BuildContext context,
+    String title,
+    int value,
+    double change,
+    IconData icon, {
+    bool hideChange = false,
+  }) {
+    return Expanded(
+      child: _card(context, title, value, change, icon, hideChange: hideChange),
     );
   }
 
@@ -90,8 +114,10 @@ class DashboardSummaryCards extends StatelessWidget {
     final changeColor = isPositive ? ChartColors.success : ChartColors.error;
 
     return Container(
-      width: 180, // 🔥 fixed card width (important)
-      padding: const EdgeInsets.all(14),
+      constraints: const BoxConstraints(
+        minWidth: 90, // 👈 prevents breaking too small
+      ),
+      padding: const EdgeInsets.all(12),
 
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -108,17 +134,17 @@ class DashboardSummaryCards extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ////////////////////////////////////////////////////////////
-          /// TOP ROW (ICON + LABEL)
+          /// TOP ROW
           ////////////////////////////////////////////////////////////
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primary.withOpacity(.1),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, size: 16, color: theme.colorScheme.primary),
+                child: Icon(icon, size: 14, color: theme.colorScheme.primary),
               ),
 
               const Spacer(),
@@ -128,14 +154,14 @@ class DashboardSummaryCards extends StatelessWidget {
                   children: [
                     Icon(
                       isPositive ? Icons.arrow_upward : Icons.arrow_downward,
-                      size: 12,
+                      size: 10,
                       color: changeColor,
                     ),
                     const Gap(2),
                     Text(
                       "${change.toStringAsFixed(1)}%",
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: changeColor,
                       ),
@@ -145,25 +171,29 @@ class DashboardSummaryCards extends StatelessWidget {
             ],
           ),
 
-          const Gap(12),
+          const Gap(8),
 
           ////////////////////////////////////////////////////////////
           /// VALUE
           ////////////////////////////////////////////////////////////
           Text(
             value.toString(),
-            style: theme.textTheme.headlineSmall?.copyWith(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
             ),
           ),
 
-          const Gap(4),
+          const Gap(2),
 
           ////////////////////////////////////////////////////////////
           /// LABEL
           ////////////////////////////////////////////////////////////
           Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

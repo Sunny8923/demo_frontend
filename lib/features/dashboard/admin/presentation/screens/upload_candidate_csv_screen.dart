@@ -24,7 +24,12 @@ class _UploadCandidateCsvScreenState
   ////////////////////////////////////////////////////////////
   void pickFile() {
     final input = html.FileUploadInputElement();
-    input.accept = ".csv";
+
+    ////////////////////////////////////////////////////////////
+    /// ACCEPT CSV + EXCEL
+    ////////////////////////////////////////////////////////////
+
+    input.accept = ".csv,.xlsx,.xls";
 
     input.click();
 
@@ -33,19 +38,26 @@ class _UploadCandidateCsvScreenState
 
       if (file == null) return;
 
+      final fileName = file.name.toLowerCase();
+
       ////////////////////////////////////////////////////////////
       /// VALIDATION
       ////////////////////////////////////////////////////////////
 
-      // Type
-      if (!file.name.toLowerCase().endsWith(".csv")) {
-        showError("Only CSV files are allowed");
+      // Type check
+      final isValidType =
+          fileName.endsWith(".csv") ||
+          fileName.endsWith(".xlsx") ||
+          fileName.endsWith(".xls");
+
+      if (!isValidType) {
+        showError("Only CSV, XLS, XLSX files are allowed");
         return;
       }
 
-      // Size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showError("File size must be less than 5MB");
+      // Size (10MB - since excel can be bigger)
+      if (file.size > 10 * 1024 * 1024) {
+        showError("File size must be less than 10MB");
         return;
       }
 
@@ -93,7 +105,7 @@ class _UploadCandidateCsvScreenState
     final result = state.value;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Upload CSV")),
+      appBar: AppBar(title: const Text("Upload CSV / Excel")),
 
       body: Center(
         child: ConstrainedBox(
@@ -140,7 +152,7 @@ class _UploadCandidateCsvScreenState
                               children: const [
                                 Icon(Icons.upload_file, size: 40),
                                 Gap(12),
-                                Text("Click to upload CSV"),
+                                Text("Click to upload CSV, XLS, XLSX"),
                               ],
                             ),
                           ),
