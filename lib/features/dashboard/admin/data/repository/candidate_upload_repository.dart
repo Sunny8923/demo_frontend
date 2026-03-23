@@ -68,7 +68,7 @@ class CandidateUploadRepository {
     }
   }
 
-  Future<Map<String, dynamic>> uploadCsv(dynamic file) async {
+  Future<String> uploadCsv(dynamic file) async {
     try {
       print("UPLOAD CSV API CALLED");
       print("File name: ${file.name}");
@@ -87,7 +87,13 @@ class CandidateUploadRepository {
 
       print("CSV RESPONSE: ${response.data}");
 
-      return response.data;
+      final jobId = response.data["jobId"];
+
+      if (jobId == null) {
+        throw Exception("jobId not found in response");
+      }
+
+      return jobId;
     } on DioException catch (e) {
       print("CSV UPLOAD FAILED");
       print(e.response?.data);

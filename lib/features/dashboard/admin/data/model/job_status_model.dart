@@ -39,6 +39,18 @@ class JobStatus {
   });
 
   factory JobStatus.fromJson(Map<String, dynamic> json) {
+    ////////////////////////////////////////////////////////////
+    /// SAFE RESULTS PARSING (FIX)
+    ////////////////////////////////////////////////////////////
+
+    final rawResults = json["results"];
+
+    List<JobResult> parsedResults = [];
+
+    if (rawResults is List) {
+      parsedResults = rawResults.map((e) => JobResult.fromJson(e)).toList();
+    }
+
     return JobStatus(
       status: json["status"] ?? "",
 
@@ -69,13 +81,9 @@ class JobStatus {
       remaining: json["summary"]?["remaining"] ?? 0,
 
       ////////////////////////////////////////////////////////////
-      /// RESULTS
+      /// RESULTS (SAFE)
       ////////////////////////////////////////////////////////////
-      results:
-          (json["results"] as List?)
-              ?.map((e) => JobResult.fromJson(e))
-              .toList() ??
-          [],
+      results: parsedResults,
 
       ////////////////////////////////////////////////////////////
       /// RAW RESPONSE (IMPORTANT)

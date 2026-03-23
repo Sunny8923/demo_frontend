@@ -1,11 +1,10 @@
 import 'dart:html' as html;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/features/dashboard/admin/presentation/screens/csv_result_screen.dart';
 import 'package:gap/gap.dart';
 
 import '../providers/csv_upload_provider.dart';
+import 'csv_processing_screen.dart';
 
 class UploadCandidateCsvScreen extends ConsumerStatefulWidget {
   const UploadCandidateCsvScreen({super.key});
@@ -80,13 +79,13 @@ class _UploadCandidateCsvScreenState
     final notifier = ref.read(csvUploadProvider.notifier);
 
     try {
-      final result = await notifier.upload(selectedFile);
+      final jobId = await notifier.upload(selectedFile);
 
       if (!mounted) return;
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => CsvResultScreen(result: result)),
+        MaterialPageRoute(builder: (_) => CsvProcessingScreen(jobId: jobId)),
       );
     } catch (e) {
       showError("Upload failed");
@@ -102,7 +101,6 @@ class _UploadCandidateCsvScreenState
 
     final state = ref.watch(csvUploadProvider);
     final isLoading = state.isLoading;
-    final result = state.value;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Upload CSV / Excel")),
@@ -164,14 +162,10 @@ class _UploadCandidateCsvScreenState
                         /// FILE NAME
                         ////////////////////////////////////////////////////////////
                         if (selectedFile != null)
-                          Text("Selected: ${selectedFile!.name}"),
-
-                        const Gap(24),
-
-                        ////////////////////////////////////////////////////////////
-                        /// RESULT UI
-                        ////////////////////////////////////////////////////////////
-                        if (result != null) _ResultCard(result: result),
+                          Text(
+                            "Selected: ${selectedFile!.name}",
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
                       ],
                     ),
                   ),
@@ -187,7 +181,14 @@ class _UploadCandidateCsvScreenState
                         ? null
                         : upload,
                     child: isLoading
-                        ? const CircularProgressIndicator()
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text("Upload & Process"),
                   ),
                 ),
@@ -196,33 +197,6 @@ class _UploadCandidateCsvScreenState
           ),
         ),
       ),
-    );
-  }
-}
-
-////////////////////////////////////////////////////////////
-/// RESULT CARD
-////////////////////////////////////////////////////////////
-
-class _ResultCard extends StatelessWidget {
-  final Map<String, dynamic> result;
-
-  const _ResultCard({required this.result});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Results", style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 10),
-
-        Text("Total: ${result['total']}"),
-        Text("Created: ${result['created']}"),
-        Text("Duplicate: ${result['duplicate']}"),
-        Text("Skipped: ${result['skipped']}"),
-        Text("Error: ${result['error']}"),
-      ],
     );
   }
 }
