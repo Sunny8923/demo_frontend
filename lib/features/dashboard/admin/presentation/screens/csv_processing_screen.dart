@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/features/dashboard/admin/presentation/screens/view_candidates_screen.dart';
 import 'package:gap/gap.dart';
 
 import '../providers/job_status_provider.dart';
@@ -144,9 +145,11 @@ class _CsvProcessingScreenState extends ConsumerState<CsvProcessingScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.pushNamed(
+                              Navigator.push(
                                 context,
-                                "/candidates", // 👈 your existing route
+                                MaterialPageRoute(
+                                  builder: (_) => const ViewCandidatesScreen(),
+                                ),
                               );
                             },
                             child: const Text("View Candidates"),
